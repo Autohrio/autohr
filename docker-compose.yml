@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $AUTOHR_DB_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $AUTOHR_DB_PASSWORD
+    ports:
+      - 15999:27017
+    volumes:
+      - ./storage/mongodb_data:/data/db
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - 12372:6379
+    volumes:
+      - ./storage/redis_data:/data
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: $AUTOHR_DB_USERNAME
+      ME_CONFIG_MONGODB_ADMINPASSWORD: $AUTOHR_DB_PASSWORD
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - 8089:8081
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"   # SMTP port
+      - "8025:8025"   # Web UI port
+
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./storage/minio_data:/data
