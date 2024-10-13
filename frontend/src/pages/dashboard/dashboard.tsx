@@ -1,4 +1,6 @@
+// dashboardLayout.tsx
 import { DashboardHeader, Sidebar } from "@/components";
+import { Outlet } from "react-router-dom";
 
 export default function EmailClient() {
   return (
@@ -10,7 +12,7 @@ export default function EmailClient() {
           <Sidebar />
         </aside>
         <main className="flex-1 flex">
-          {/* Rest of the main content remains unchanged */}
+          <Outlet />
         </main>
       </div>
     </div>

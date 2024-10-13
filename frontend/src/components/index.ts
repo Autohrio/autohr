@@ -1,2 +1,10 @@
 export { default as Sidebar } from './custom/sidebar';
 export { default as DashboardHeader } from './custom/dashboardHeader';
+export { default as DashboardIndex } from './custom/dashboardIndex/dashboardIndex';
+export { default as Team } from './custom/team/team';
+export { default as ChatInterface } from './custom/chat/chat';
+export { default as Meetings } from './custom/meetings/meetings';
+export { default as Configure } from './custom/configure/configure';
+export { default as Onboarding } from './custom/onboarding/onboarding';
+export { default as Policies } from './custom/policies/policies';
+export { default as Compliance } from './custom/compliance/compliance';

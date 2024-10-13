@@ -1,7 +1,32 @@
 import React from 'react';
-import { LIFEGUARDTOWER } from '../../assets';
+import { DASHIMG, LIFEGUARDTOWER } from '../../assets';
+import { useNavigate } from 'react-router-dom';
 
-const Home = () => {
+const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const handleDashboardNavigation = () => {
+    navigate('/dashboard');
+  }
+
+  const faqs = [
+    {
+      question: "What is AutoHr?",
+      answer: "AutoHr is an innovative HR management system that simplifies and automates various HR processes, helping organizations save time and reduce costs."
+    },
+    {
+      question: "How does AutoHr save companies money?",
+      answer: "AutoHr streamlines HR operations, reducing manual work and potential errors. This efficiency can lead to savings of up to 25% on HR-related costs."
+    },
+    {
+      question: "Is AutoHr suitable for small businesses?",
+      answer: "Yes, AutoHr is designed to scale with your business needs, making it suitable for small startups to large enterprises."
+    },
+    {
+      question: "Can AutoHr integrate with other systems?",
+      answer: "AutoHr offers seamless integration with various popular business tools and systems, enhancing overall operational efficiency."
+    }
+  ];
+
   return (
     <div className="min-h-screen">
       <header className="bg-indigo-900 text-white">
@@ -14,7 +39,7 @@ const Home = () => {
             <a href="/" className="hover:text-indigo-300">About</a>
           </nav>
           <div className="flex items-center space-x-4">
-            <button className="btn btn-primary">Book Demo</button>
+            <button className="btn btn-primary" onClick={handleDashboardNavigation}>Dashboard</button>
           </div>
         </div>
       </header>
@@ -79,6 +104,84 @@ const Home = () => {
           </div>
         </section>
       </main>
+
+      <section className='px-4 py-20 md:px-40'>
+        <div className="flex items-center my-16">
+          <h2 className="text-3xl md:text-4xl font-black text-center md:text-left">
+            We're reinventing human resource <br className="hidden md:inline" /> so you can  <span className="text-red-400">save up to 25%!</span>
+          </h2>
+        </div>
+        <div className="mockup-browser bg-gray-200 my-8 border shadow-2xl overflow-hidden">
+          <div className="mockup-browser-toolbar"></div>
+          <div className="bg-gray-200 flex justify-center py-4">
+            <img src={DASHIMG} alt="Dashboard" className="max-w-full h-auto" />
+          </div>
+        </div>
+      </section>
+
+      <section className="py-24">
+        <div className="container mx-auto px-56">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">Frequently Asked Questions (FAQs)</h2>
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <div key={index} className="collapse collapse-plus bg-white">
+                <input type="radio" name="my-accordion-3" />
+                <div className="collapse-title text-xl font-medium">
+                  {faq.question}
+                </div>
+                <div className="collapse-content">
+                  <p>{faq.answer}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="py-8">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">AutoHr</h3>
+              <p>Redefining Human Resource Management</p>
+            </div>
+            <div>
+              <h4 className="font-bold mb-2">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><a href="/" className="text-gray-600">Home</a></li>
+                <li><a href="/" className="text-gray-600">About Us</a></li>
+                <li><a href="/" className="text-gray-600">Services</a></li>
+                <li><a href="/" className="text-gray-600">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-2">Resources</h4>
+              <ul className="space-y-2">
+                <li><a href="/" className="text-gray-600">Blog</a></li>
+                <li><a href="/" className="text-gray-600">FAQs</a></li>
+                <li><a href="/" className="text-gray-600">Support</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-2">Connect With Us</h4>
+              <div className="flex space-x-4">
+                <a href="/" className="text-2xl text-gray-600">
+                  <i className="fab fa-facebook"></i>
+                </a>
+                <a href="/" className="text-2xl text-gray-600">
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a href="/" className="text-2xl text-gray-600">
+                  <i className="fab fa-linkedin"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 text-center">
+            <p>&copy; 2023 AutoHr. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
