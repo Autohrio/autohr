@@ -1,15 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Share2, Download, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, Link } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+interface CustomRenderers {
+  [key: string]: React.FC<{ children: React.ReactNode }>;
+}
 
 const Policies: React.FC = () => {
-  const [content, setContent] = useState('# Company Policies\n\n## Code of Conduct\n\nOur company is committed to...\n\n## Compliance Guidelines\n\n1. All employees must...\n2. Annual training is required...\n\n## Data Protection\n\nWe take data protection seriously...');
+  const [content, setContent] = useState<string>(`# Company Policies
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+## Code of Conduct
+
+Our company is committed...
+
+## Compliance Guidelines
+
+1. All employees must...
+2. Annual training is required...
+
+## Data Protection
+
+We take data protection seriously...
+
+| Policy | Description | Importance |
+|--------|-------------|------------|
+| Code of Conduct | Guidelines for behavior | High |
+| Compliance | Legal and regulatory adherence | Critical |
+| Data Protection | Safeguarding sensitive information | Very High |
+`);
+
+  const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
   };
 
@@ -18,13 +43,27 @@ const Policies: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'policies_and_compliance.md';
+    a.download = 'policies.md';
     a.click();
   };
 
   const handleShare = () => {
     // Implement share functionality
     console.log('Sharing content...');
+  };
+
+  const customRenderers: CustomRenderers = {
+    h1: ({children}) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
+    h2: ({children}) => <h2 className="text-2xl font-semibold mb-3">{children}</h2>,
+    h3: ({children}) => <h3 className="text-xl font-medium mb-2">{children}</h3>,
+    p: ({children}) => <p className="mb-4">{children}</p>,
+    ul: ({children}) => <ul className="list-disc pl-5 mb-4">{children}</ul>,
+    ol: ({children}) => <ol className="list-decimal pl-5 mb-4">{children}</ol>,
+    li: ({children}) => <li className="mb-1">{children}</li>,
+    table: ({children}) => <table className="w-full border-collapse border border-gray-300 mb-4">{children}</table>,
+    thead: ({children}) => <thead className="bg-gray-100">{children}</thead>,
+    th: ({children}) => <th className="border border-gray-300 p-2">{children}</th>,
+    td: ({children}) => <td className="border border-gray-300 p-2">{children}</td>,
   };
 
   return (
@@ -60,14 +99,19 @@ const Policies: React.FC = () => {
           </TabsList>
           <TabsContent value="edit">
             <textarea
-              className="w-full h-[calc(100vh-200px)] p-4 font-mono text-sm bg-gray-200 resize-none focus:outline-none"
+              className="w-full h-[calc(100vh-200px)] p-4 font-mono text-sm bg-gray-100 resize-none focus:outline-none"
               value={content}
               onChange={handleContentChange}
             />
           </TabsContent>
           <TabsContent value="preview">
-            <div className="w-full h-[calc(100vh-200px)] p-4 overflow-auto prose">
-              <ReactMarkdown>{content}</ReactMarkdown>
+            <div className="w-full h-[calc(100vh-200px)] px-16 py-4 overflow-auto prose max-w-none">
+              <ReactMarkdown 
+                components={customRenderers}
+                remarkPlugins={[remarkGfm]}
+              >
+                {content}
+              </ReactMarkdown>
             </div>
           </TabsContent>
         </Tabs>
