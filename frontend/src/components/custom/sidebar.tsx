@@ -73,10 +73,10 @@ const Sidebar = () => {
             <Calendar className="mr-2 h-4 w-4" />
             Meetings
           </Link>
-          {/* <Link to="/dashboard/emails" className="w-full flex items-center px-2 py-2 text-sm font-medium text-gray-900 rounded-md hover:bg-gray-100">
+          <Link to="/dashboard/emails" className="w-full flex items-center px-2 py-2 text-sm font-medium text-gray-900 rounded-md hover:bg-gray-100">
             <Mail className="mr-2 h-4 w-4" />
             Emails
-          </Link> */}
+          </Link>
         </nav>
       </div>
       <div>
