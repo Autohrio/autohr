@@ -1,12 +1,14 @@
 import React from 'react';
 import { DASHIMG, LIFEGUARDTOWER } from '../../assets';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '@/context/useAuth';
+import Header from './components/header';
+import Footer from './components/footer';
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
-  const handleDashboardNavigation = () => {
-    navigate('/dashboard');
-  }
+  // const navigate = useNavigate();
+  // const { user } = useAuth();
+
 
   const faqs = [
     {
@@ -29,20 +31,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <header className="bg-indigo-900 text-white">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <div className="text-2xl font-bold">Auto<span className='text-[#FF8D60]'>Hr.</span></div>
-          <nav className="hidden md:flex space-x-4">
-            <a href="/" className="hover:text-indigo-300">Coverage</a>
-            <a href="/" className="hover:text-indigo-300">Resources</a>
-            <a href="/" className="hover:text-indigo-300">Blog</a>
-            <a href="/" className="hover:text-indigo-300">About</a>
-          </nav>
-          <div className="flex items-center space-x-4">
-            <button className="btn btn-primary" onClick={handleDashboardNavigation}>Dashboard</button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main>
         <section className="bg-gradient-to-b from-indigo-900 to-blue-600 text-white py-[10rem]">
@@ -138,50 +127,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <footer className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">AutoHr</h3>
-              <p>Redefining Human Resource Management</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-2">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><a href="/" className="text-gray-600">Home</a></li>
-                <li><a href="/" className="text-gray-600">About Us</a></li>
-                <li><a href="/" className="text-gray-600">Services</a></li>
-                <li><a href="/" className="text-gray-600">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-2">Resources</h4>
-              <ul className="space-y-2">
-                <li><a href="/" className="text-gray-600">Blog</a></li>
-                <li><a href="/" className="text-gray-600">FAQs</a></li>
-                <li><a href="/" className="text-gray-600">Support</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-2">Connect With Us</h4>
-              <div className="flex space-x-4">
-                <a href="/" className="text-2xl text-gray-600">
-                  <i className="fab fa-facebook"></i>
-                </a>
-                <a href="/" className="text-2xl text-gray-600">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="/" className="text-2xl text-gray-600">
-                  <i className="fab fa-linkedin"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 text-center">
-            <p>&copy; 2023 AutoHr. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

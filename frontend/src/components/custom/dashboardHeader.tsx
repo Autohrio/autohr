@@ -4,8 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown, LogOut, UserCircle, CreditCard, Settings, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '@/context/useAuth';
+
 export default function EmailClient() {
   // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const handleDropdownNav = (route: string) => {
     navigate(`/${route}`)
@@ -47,7 +50,7 @@ export default function EmailClient() {
               <PlusCircle className="mr-2 h-4 w-4" />
               <span>New Team</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
               <span className="ml-auto text-xs text-gray-400">⌘Q</span>
