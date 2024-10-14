@@ -3,13 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Share2, Download, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, Link } from 'lucide-react';
+import { Share2, Download, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, Link, Type } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface CustomRenderers {
   [key: string]: React.FC<{ children: React.ReactNode }>;
 }
+
+const fontFamilies = [
+  { name: 'Sans-serif', value: 'sans-serif' },
+  { name: 'Serif', value: 'serif' },
+  { name: 'Monospace', value: 'monospace' },
+  { name: 'Cursive', value: 'cursive' },
+  { name: 'Fantasy', value: 'fantasy' },
+];
 
 const Policies: React.FC = () => {
   const [content, setContent] = useState<string>(`# Company Policies
@@ -33,6 +41,7 @@ We take data protection seriously...
 | Compliance | Legal and regulatory adherence | Critical |
 | Data Protection | Safeguarding sensitive information | Very High |
 `);
+  const [previewFont, setPreviewFont] = useState<string>('sans-serif');
 
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -50,6 +59,10 @@ We take data protection seriously...
   const handleShare = () => {
     // Implement share functionality
     console.log('Sharing content...');
+  };
+
+  const handleFontChange = (font: string) => {
+    setPreviewFont(font);
   };
 
   const customRenderers: CustomRenderers = {
@@ -78,6 +91,18 @@ We take data protection seriously...
             <Button variant="ghost" className="p-2" size="icon"><Underline className="h-4 w-4" /></Button>
             <Button variant="ghost" className="p-2" size="icon"><List className="h-4 w-4" /></Button>
             <Button variant="ghost" className="p-2" size="icon"><Link className="h-4 w-4" /></Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-2" size="icon"><Type className="h-4 w-4" /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {fontFamilies.map((font) => (
+                  <DropdownMenuItem key={font.value} onClick={() => handleFontChange(font.value)}>
+                    <span style={{ fontFamily: font.value }}>{font.name}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex space-x-2">
             <DropdownMenu>
@@ -105,7 +130,10 @@ We take data protection seriously...
             />
           </TabsContent>
           <TabsContent value="preview">
-            <div className="w-full h-[calc(100vh-200px)] px-16 py-4 overflow-auto prose max-w-none">
+            <div 
+              className="w-full h-[calc(100vh-200px)] px-16 py-4 overflow-auto prose max-w-none"
+              style={{ fontFamily: previewFont }}
+            >
               <ReactMarkdown 
                 components={customRenderers}
                 remarkPlugins={[remarkGfm]}
