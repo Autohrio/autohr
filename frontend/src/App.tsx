@@ -3,7 +3,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { Dashboard, Home, Login, Pricing, Settings } from '@/pages';
-import { ChatInterface, Compliance, Configure, DashboardIndex, Email, Feedback, Meetings, Onboarding, Policies, Team } from '@/components';
+import { ChatInterface, Compliance, Configure, DashboardIndex, Email, Feedback, Integration, Meetings, Onboarding, Policies, Team } from '@/components';
 import { AuthProvider, useAuth } from '@/context/useAuth';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -38,6 +38,7 @@ const AppRoutes: React.FC = () => {
         <Route path="configure" element={<Configure />} />
         <Route path="emails" element={<Email />} />
         <Route path="feedback" element={<Feedback />} />
+        <Route path="integrations" element={<Integration />} />
       </Route>
       <Route path="/settings" element={
         <ProtectedRoute>

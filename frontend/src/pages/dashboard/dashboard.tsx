@@ -2,17 +2,18 @@
 import { DashboardHeader, Sidebar } from "@/components";
 import { Outlet } from "react-router-dom";
 
-export default function EmailClient() {
+export default function DashboardLayout() {
   return (
     <div className="h-screen flex flex-col">
       <DashboardHeader />
-      
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 border-r p-4 bg-gray-100">
           <Sidebar />
         </aside>
-        <main className="flex-1 flex">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

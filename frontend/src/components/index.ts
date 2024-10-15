@@ -10,3 +10,4 @@ export { default as Policies } from './custom/policies/policies';
 export { default as Compliance } from './custom/compliance/compliance';
 export { default as Email } from './custom/email/email';
 export { default as Feedback } from './custom/feedback/feedback';
+export { default as Integration } from './custom/integrations/integrations';
