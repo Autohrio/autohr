@@ -21,10 +21,19 @@ const employees = [
   { id: '4', name: 'Alice Williams', avatar: '/alice-williams.jpg', occupation: 'Data Analyst' },
 ];
 
+// Mock list of candidates with avatars and positions
+const candidates = [
+  { id: '1', name: 'Emma Brown', avatar: '/emma-brown.jpg', position: 'Frontend Developer' },
+  { id: '2', name: 'Michael Lee', avatar: '/michael-lee.jpg', position: 'Backend Engineer' },
+  { id: '3', name: 'Sarah Davis', avatar: '/sarah-davis.jpg', position: 'Data Scientist' },
+  { id: '4', name: 'David Wilson', avatar: '/david-wilson.jpg', position: 'Product Manager' },
+];
+
 const Feedback: React.FC = () => {
   const [activeFeedback, setActiveFeedback] = useState<string | null>(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
+  const [selectedCandidate, setSelectedCandidate] = useState<string>('');
 
   const handleFeedbackSubmit = () => {
     if (activeFeedback && feedbackText) {
@@ -32,14 +41,22 @@ const Feedback: React.FC = () => {
         alert('Please select an employee for feedback.');
         return;
       }
+      if (activeFeedback === 'candidate' && !selectedCandidate) {
+        alert('Please select a candidate for feedback.');
+        return;
+      }
       console.log(`Submitting ${activeFeedback} feedback:`, feedbackText);
       if (activeFeedback === 'employee') {
         console.log('Selected employee:', selectedEmployee);
+      }
+      if (activeFeedback === 'candidate') {
+        console.log('Selected candidate:', selectedCandidate);
       }
       // Here you would typically send this data to your backend
       setFeedbackText('');
       setActiveFeedback(null);
       setSelectedEmployee('');
+      setSelectedCandidate('');
     }
   };
 
@@ -85,6 +102,29 @@ const Feedback: React.FC = () => {
                       <div>
                         <p className="font-medium">{employee.name}</p>
                         <p className="text-sm text-gray-500">{employee.occupation}</p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {activeFeedback === 'candidate' && (
+            <Select onValueChange={setSelectedCandidate} value={selectedCandidate}>
+              <SelectTrigger className="w-full h-15 text-left">
+                <SelectValue placeholder="Select a candidate" />
+              </SelectTrigger>
+              <SelectContent>
+                {candidates.map((candidate) => (
+                  <SelectItem key={candidate.id} value={candidate.id}>
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage src={candidate.avatar} alt={candidate.name} />
+                        <AvatarFallback>{candidate.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{candidate.name}</p>
+                        <p className="text-sm text-gray-500">{candidate.position}</p>
                       </div>
                     </div>
                   </SelectItem>
