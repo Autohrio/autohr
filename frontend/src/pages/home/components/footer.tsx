@@ -42,7 +42,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 text-center">
-          <p>&copy; 2023 AutoHr. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} AutoHr. All rights reserved.</p>
         </div>
       </div>
     </footer>
