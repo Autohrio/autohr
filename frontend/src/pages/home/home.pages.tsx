@@ -21,11 +21,11 @@ const Home: React.FC = () => {
     },
     {
       question: "Is AutoHr suitable for small businesses?",
-      answer: "Yes, AutoHr is designed to scale with your business needs, making it suitable for small startups to large enterprises."
+      answer: "Absolutely! AutoHr is flexible and can grow with your company, whether you're a tiny startup or a big player."
     },
     {
       question: "Can AutoHr integrate with other systems?",
-      answer: "AutoHr offers seamless integration with various popular business tools and systems, enhancing overall operational efficiency."
+      answer: "AutoHr will be offering seamless integration with various popular business tools and systems, enhancing overall operational efficiency."
     }
   ];
 
@@ -51,41 +51,46 @@ const Home: React.FC = () => {
 
         <section className="py-12 mt-20 container mx-auto px-64">
           <div className="flex items-center mb-16">
-            <div className="bg-red-400 rounded-full w-[15rem] h-[10rem] flex items-center justify-center mr-4">
+            <div className="bg-red-400 rounded-full p-2 w-[15rem] h-[10rem] flex items-center justify-center mr-4">
               <span className="text-white text-xl">soAffordable</span>
             </div>
             <h2 className="text-4xl font-black">
-              We're reinventing human resource so you can <span className="text-red-400">save up to 25%!</span>
+            Upgrade your team, slash your bills: AI-powered HR that's <span className="text-red-400">totally worth it.</span>
             </h2>
           </div>
 
-          <h3 className="text-3xl px-8 font-bold mb-8 text-indigo-900">We put an end to this with our low-cost approach</h3>
+          <h3 className="text-2xl text-center px-8 font-bold mb-8 text-indigo-900">
+            Tired of the same old HR routine? <br />
+            Let's shake things up. With intelligent automation, 
+            we're not just managing people.  we're boosting productivity, cutting costs, 
+            and creating a thriving company culture.
+          <br /> <span className='text-blue-600'>Ready to level up your HR game?</span></h3>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <div className="p-6 rounded-lg mb-20">
-                <h4 className="text-2xl font-bold mb-2 text-indigo-900">Medical Insurance</h4>
-                <p className="text-gray-700 mb-4">Emergency medical coverage for Canadians traveling outside their province.</p>
+                <h4 className="text-2xl font-bold mb-2 text-indigo-900">Strategic Analytics</h4>
+                <p className="text-gray-700 mb-4">Harness the power of real-time analytics to make data-driven decisions.</p>
                 <a href="/" className="text-indigo-900 font-bold">Learn More →</a>
               </div>
-              <div className="bg-[#e0def4] h-[20rem] p-6 rounded-lg">
-                <h4 className="text-5xl font-bold mb-2 text-indigo-900">Medical Insurance</h4>
-                <p className="text-gray-700 mb-4">Emergency medical coverage for Canadians traveling outside their province.</p>
+              <div className="bg-[#e0def4] p-6 rounded-lg">
+                <h4 className="text-5xl font-bold mb-2 text-indigo-900">Automated Onboarding</h4>
+                <p className="text-gray-700 mb-4">Reduce administrative workload by up to 70% while ensuring a smooth, personalized welcome experience for every new team member.</p>
                 <a href="/" className="text-indigo-900 font-bold">Learn More →</a>
               </div>
 
             </div>
             <div>
               <div className="bg-[#facdc6] mb-20 h-[20rem] p-6 rounded-lg md:mt-16">
-                <h4 className="text-5xl font-bold mb-2 text-indigo-900">Trip Insurance</h4>
-                <p className="text-gray-700 mb-4">Trip cancellation and interruption insurance plan designed to protect against risks and financial losses.</p>
+                <h4 className="text-5xl font-bold mb-2 text-indigo-900">Personalized Engagement</h4>
+                <p className="text-gray-700 mb-4">Boost workplace satisfaction and productivity with tailored employee experiences.</p>
                 <a href="/" className="text-indigo-900 font-bold">Learn More →</a>
               </div>
               <div>
                 <div className="bg-[#dbe6dd] p-6 rounded-lg h-[20rem]">
-                  <div className="bg-green-400 text-white text-xs px-2 py-1 rounded mb-2 inline-block">TRAVEL INSURANCE FOR VISITORS TO CANADA</div>
-                  <h3 className="text-5xl font-bold mb-2 text-indigo-900">Visitors Insurance</h3>
-                  <p className="text-gray-700 mb-4">Travel insurance for visitors to Canada.</p>
+                  <div className="bg-green-400 text-green-900  text-xs px-2 py-1 rounded-xl mb-2 inline-block">INTELLIGENT POLICY ENFORCEMENT</div>
+                  <h3 className="text-5xl font-bold mb-2 text-indigo-900">Compliance Management</h3>
+                  <p className="text-gray-700 mb-4">Stay ahead of regulatory changes with our advanced compliance tools.</p>
                   <a href="/" className="text-indigo-900 font-bold">LEARN MORE →</a>
                 </div>
               </div>
@@ -96,8 +101,8 @@ const Home: React.FC = () => {
 
       <section className='px-4 py-20 md:px-40'>
         <div className="flex items-center my-16">
-          <h2 className="text-3xl md:text-4xl font-black text-center md:text-left">
-            We're reinventing human resource <br className="hidden md:inline" /> so you can  <span className="text-red-400">save up to 25%!</span>
+          <h2 className="text-3xl md:text-5xl font-black text-center md:text-left">
+          Cultivate Talent, Cut Costs & Create <span className="text-red-400">Success!</span>
           </h2>
         </div>
         <div className="mockup-browser bg-gray-200 my-8 border shadow-2xl overflow-hidden">
