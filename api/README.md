@@ -8,6 +8,11 @@ erDiagram
     USER {
         string name
         string email
+        string username
+        text bio
+        string[] urls
+        date birth_date
+        string language
     }
     WORKSPACE ||--o{ TEAM : has
     WORKSPACE ||--o{ ONBOARDING : has
@@ -72,25 +77,12 @@ erDiagram
     BILLING {
         string plan
     }
-    SETTINGS ||--|| ACCOUNT : has
-    SETTINGS ||--|| PROFILE : has
-    ACCOUNT {
-        string name
-        date birth_date
-        string language
-    }
-    PROFILE {
-        string username
-        string email
-        text bio
-        string[] urls
-    }
-    FEEDBACK_EMAIL {
-        object smtp_config
+    SETTINGS {
+        string preferred_language
+        boolean notifications_enabled
     }
     EMAIL ||--|| EMAIL_SMTP_CONFIG : has
     EMAIL ||--|| EMAIL_TEMPLATES : has
-    FEEDBACK_EMAIL ||--|| EMAIL_SMTP_CONFIG : has
     EMPLOYEE_FEEDBACK {
         string from_employee
         string to_employee
