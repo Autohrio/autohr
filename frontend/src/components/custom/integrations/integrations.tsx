@@ -8,7 +8,7 @@ const Integrations: React.FC = () => {
       
       <h2 className="text-xl font-semibold mb-2">1. Install DaisyUI</h2>
       <div className="mockup-code mb-4">
-        <pre data-prefix="$"><code>npm i autohr</code></pre>
+        <pre data-prefix="$"><code>npm i @autohr/autohr-js</code></pre>
       </div>
       
       <h2 className="text-xl font-semibold mb-2">2. Configure Tailwind CSS</h2>
