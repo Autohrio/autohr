@@ -19,7 +19,7 @@ const {
 router.post('/users', userController.createUser);
 router.get('/users', userController.getUsers);
 router.get('/users/:id', userController.getUserById);
-router.get('/users/email/:email', userController.getUserByEmail);
+router.post('/users/email', userController.getUserByEmail);
 router.put('/users/:id', userController.updateUser);
 router.delete('/users/:id', userController.deleteUser);
 router.get('/users/:id/workspaces', userController.getUserWorkspaces);
@@ -29,7 +29,7 @@ router.put('/users/:id/settings', userController.updateUserSettings);
 router.get('/users/:id/settings', userController.getUserSettings);
 
 router.post('/workspaces', workspaceController.createWorkspace);
-router.get('/workspaces', workspaceController.getWorkspaces);
+router.post('/workspaces/owner', workspaceController.getWorkspaces);
 router.get('/workspaces/:id', workspaceController.getWorkspaceById);
 router.put('/workspaces/:id', workspaceController.updateWorkspace);
 router.delete('/workspaces/:id', workspaceController.deleteWorkspace);
