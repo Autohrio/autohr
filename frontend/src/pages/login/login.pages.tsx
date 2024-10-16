@@ -6,15 +6,21 @@ import { CardContent, CardDescription, CardHeader, CardTitle } from "@/component
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LOGO } from '@/assets';
 import { useAuth } from '@/context/useAuth';
-
-// May remove the otp input
+import { useUser } from '@/context/useUser';
+import { useWorkspace } from '@/context/useWorkspace';
+import { registerUser, getAllWorkspaces, createWorkspace, checkUserEmailAlreadyExists } from '@/api';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [step, setStep] = useState<'email' | 'otp' | 'register' | 'workspace'>('email');
   const [message, setMessage] = useState('');
-  const { signInWithOtp, verifyOtp } = useAuth();
+  const { session, signInWithOtp, verifyOtp } = useAuth();
+  const { loadUser } = useUser();
+  const { setCurrentWorkspace, setWorkspaces } = useWorkspace();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,10 +42,55 @@ const Login: React.FC = () => {
     e.preventDefault();
     try {
       await verifyOtp(email, otp);
-      navigate(from, { replace: true });
+      if (session?.user.aud === 'authenticated') {
+        const userData = await checkUserEmailAlreadyExists(email);
+        if (userData) {
+          // User exists, load workspaces
+          await loadUser(email);
+          const userWorkspaces = await getAllWorkspaces(email);
+          setWorkspaces(userWorkspaces);
+          if (userWorkspaces.length > 0) {
+            setCurrentWorkspace(userWorkspaces[0]);
+            navigate(from, { replace: true });
+          } else {
+            setStep('workspace');
+            setMessage('Please create your first workspace.');
+          }
+        } else {
+          // User doesn't exist, move to registration
+          setStep('register');
+          setMessage('Please provide your name and username to complete registration.');
+        }
+      }
     } catch (error) {
       console.error('Error verifying OTP:', error);
       setMessage('Invalid OTP. Please try again.');
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await registerUser(name, email, username);
+      await loadUser(email);
+      setStep('workspace');
+      setMessage('Registration successful. Please create your first workspace.');
+    } catch (error) {
+      console.error('Error registering user:', error);
+      setMessage('Registration failed. Please try again.');
+    }
+  };
+
+  const handleCreateWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const newWorkspace = await createWorkspace(workspaceName, email);
+      setWorkspaces([newWorkspace]);
+      setCurrentWorkspace(newWorkspace);
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+      setMessage('Workspace creation failed. Please try again.');
     }
   };
 
@@ -61,8 +112,16 @@ const Login: React.FC = () => {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Create an account or sign in</CardTitle>
-            <CardDescription>Enter your email below to create your account</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              {step === 'register' ? 'Complete Your Registration' :
+                step === 'workspace' ? 'Create Your Workspace' :
+                  'Create an account or sign in'}
+            </CardTitle>
+            <CardDescription>
+              {step === 'register' ? 'Please provide your details to complete registration' :
+                step === 'workspace' ? 'Enter a name for your new workspace' :
+                  'Enter your email below to create your account'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {message && (
@@ -70,28 +129,70 @@ const Login: React.FC = () => {
                 <AlertDescription>{message}</AlertDescription>
               </Alert>
             )}
-            <form onSubmit={step === 'email' ? handleSendOtp : handleVerifyOtp}>
-              <div className="mb-4">
-                {step === 'email' ? (
-                  <Input 
-                    type="email" 
-                    placeholder="name@example.com" 
+            <form onSubmit={step === 'email' ? handleSendOtp :
+              step === 'otp' ? handleVerifyOtp :
+                step === 'register' ? handleRegister :
+                  handleCreateWorkspace}>
+              {step === 'email' && (
+                <div className="mb-4">
+                  <Input
+                    type="email"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                ) : (
-                  <Input 
-                    type="text" 
-                    placeholder="Enter OTP" 
+                </div>
+              )}
+              {step === 'otp' && (
+                <div className="mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Enter OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     required
                   />
-                )}
-              </div>
+                </div>
+              )}
+              {step === 'register' && (
+                <>
+                  <div className="mb-4">
+                    <Input
+                      type="text"
+                      placeholder="Full Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <Input
+                      type="text"
+                      placeholder="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
+                </>
+              )}
+              {step === 'workspace' && (
+                <div className="mb-4">
+                  <Input
+                    type="text"
+                    placeholder="Workspace Name"
+                    value={workspaceName}
+                    onChange={(e) => setWorkspaceName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
               <Button className="w-full" variant="default" type="submit">
-                {step === 'email' ? 'Sign In with Email' : 'Verify OTP'}
+                {step === 'email' ? 'Sign In with Email' :
+                  step === 'otp' ? 'Verify OTP' :
+                    step === 'register' ? 'Complete Registration' :
+                      'Create Workspace'}
               </Button>
             </form>
           </CardContent>

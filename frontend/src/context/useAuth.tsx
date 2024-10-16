@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const {
       data: { session },
       error,
-    }= await supabase.auth.verifyOtp({ email, token, type: 'email' });
+    } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
 
     if (session) {
       setSession(session);

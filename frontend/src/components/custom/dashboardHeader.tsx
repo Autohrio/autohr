@@ -5,9 +5,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ChevronDown, LogOut, UserCircle, CreditCard, Settings, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '@/context/useAuth';
+import { useUser } from "@/context/useUser";
 
 export default function EmailClient() {
   // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { user } = useUser();
   const { signOut } = useAuth();
   const navigate = useNavigate();
   const handleDropdownNav = (route: string) => {
@@ -24,9 +26,9 @@ export default function EmailClient() {
             <Button variant="ghost" className="flex items-center space-x-4 h-10">
               <Avatar>
                 <AvatarImage src="/placeholder.svg" alt="AK" />
-                <AvatarFallback>AK</AvatarFallback>
+                <AvatarFallback>{user?.name.slice(0,2).toUpperCase()}</AvatarFallback>
               </Avatar>
-              <span className="font-semibold">Alice Koru</span>
+              <span className="font-semibold">{user?.name}</span>
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

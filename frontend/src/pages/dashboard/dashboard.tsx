@@ -1,8 +1,33 @@
 // dashboardLayout.tsx
-import { DashboardHeader, Sidebar } from "@/components";
-import { Outlet } from "react-router-dom";
 
+import { DashboardHeader, Sidebar } from "@/components";
+import { useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import {  useWorkspace } from '@/context/useWorkspace';
+import { getAllWorkspaces } from "@/api";
+import { useUser } from "@/context/useUser";
 export default function DashboardLayout() {
+  const { user } = useUser();
+  const { setWorkspaces, setCurrentWorkspace, currentWorkspace } = useWorkspace();
+  const getWorkspaces = async () => {
+    if (user) {
+      try {
+        const userWorkspaces = await getAllWorkspaces(user.email);
+        console.log(userWorkspaces)
+        setWorkspaces(userWorkspaces);
+        if (userWorkspaces.length > 0 && !currentWorkspace) {
+          setCurrentWorkspace(userWorkspaces[0]);
+        }
+      } catch (error) {
+        console.error('Error loading workspaces:', error);
+      }
+    }
+  }
+
+  useEffect(() => {
+    getWorkspaces()
+  }, [])
+
   return (
     <div className="h-screen flex flex-col">
       <DashboardHeader />

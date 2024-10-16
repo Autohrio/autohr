@@ -1,17 +1,29 @@
-// App.tsx
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { Dashboard, Home, Login, Pricing, Settings } from '@/pages';
 import { ChatInterface, Compliance, Configure, DashboardIndex, Email, Feedback, Integration, Meetings, Onboarding, Policies, Team } from '@/components';
 import { AuthProvider, useAuth } from '@/context/useAuth';
+import { UserProvider } from '@/context/useUser';
+import { WorkspaceProvider } from '@/context/useWorkspace';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { session } = useAuth();
   const location = useLocation();
 
-  if (!user) {
+  if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { session } = useAuth();
+  const location = useLocation();
+
+  if (session) {
+    return <Navigate to="/dashboard" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
@@ -21,7 +33,11 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={
+        <PublicRoute>
+          <Login />
+        </PublicRoute>
+      } />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
@@ -52,9 +68,13 @@ const AppRoutes: React.FC = () => {
 function App() {
   return (
     <AuthProvider>
-      <div className='App'>
-        <AppRoutes />
-      </div>
+      <UserProvider>
+        <WorkspaceProvider>
+          <div className='App'>
+            <AppRoutes />
+          </div>
+        </WorkspaceProvider>
+      </UserProvider>
     </AuthProvider>
   );
 }

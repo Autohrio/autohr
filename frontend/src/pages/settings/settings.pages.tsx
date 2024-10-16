@@ -31,7 +31,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeSection, setAct
 
 
 const Settings: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<Section>('Account');
+  const [activeSection, setActiveSection] = useState<Section>('Profile');
 
   return (
     <div className="flex flex-col min-h-screen">

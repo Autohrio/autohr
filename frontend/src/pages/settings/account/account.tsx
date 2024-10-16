@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,10 +6,16 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useUser } from '@/context/useUser';
 
 const Account: React.FC = () => {
   const [date, setDate] = React.useState<Date>();
+  const [name, setName] = React.useState<string | undefined>("");
+  const { user } = useUser();
 
+  useEffect(() => {
+    setName(user?.name)
+  }, [user])
   return (
     <div className="space-y-6 w-1/2">
       <div>
@@ -20,7 +26,7 @@ const Account: React.FC = () => {
       <div className="space-y-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-          <Input id="name" placeholder="Your name" className="mt-1" />
+          <Input id="name" placeholder="Your name" value={name}  className="mt-1" />
           <p className="mt-1 text-sm text-gray-500">This is the name that will be displayed on your profile and in emails.</p>
         </div>
 

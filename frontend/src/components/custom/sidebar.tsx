@@ -1,16 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ChevronDown, User, Mail, Home, Users, UserRoundCheck, Globe, MessageCircle, Calendar, Settings, Cog, PlusCircle } from "lucide-react";
+import { useWorkspace } from '@/context/useWorkspace';
+import { getAllWorkspaces } from '@/api';
+import { useUser } from '@/context/useUser';
 
 const Sidebar = () => {
-  const [activeWorkspace, setActiveWorkspace] = useState("Autohr Tech Team");
+  const { setWorkspaces, setCurrentWorkspace, currentWorkspace, workspaces } = useWorkspace();
 
-  const handleWorkspaceChange = (workspace: string) => {
-    setActiveWorkspace(workspace);
-    // You can add additional logic here, such as updating the UI or making API calls
-  };
+  const { user } = useUser();
+
+  // const handleWorkspaceChange = (workspace: string) => {
+  //   setActiveWorkspace(workspace);
+  //   // You can add additional logic here, such as updating the UI or making API calls
+  // };
+
+  const getWorkspaces = async () => {
+    if (user) {
+      try {
+        const userWorkspaces = await getAllWorkspaces(user.email);
+        setWorkspaces(userWorkspaces);
+        if (userWorkspaces.length > 0 && !currentWorkspace) {
+          setCurrentWorkspace(userWorkspaces[0]);
+        }
+      } catch (error) {
+        console.error('Error loading workspaces:', error);
+      }
+    }
+  }
+
+  useEffect(() => {
+    getWorkspaces()
+  }, [])
+  
 
   return (
     <div className="space-y-4">
@@ -19,17 +43,16 @@ const Sidebar = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="w-full justify-between text-left">
-              {activeWorkspace}
+              {currentWorkspace?.name}
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuItem onClick={() => handleWorkspaceChange("Autohr Tech Team")}>
-              Autohr Tech Team
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleWorkspaceChange("Autohr Management Team")}>
-              Autohr Management Team
-            </DropdownMenuItem>
+            {workspaces?.map((workspace) => (
+              <DropdownMenuItem onClick={() => setCurrentWorkspace(workspace)}>
+                {workspace.name}
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuItem>
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Workspace
