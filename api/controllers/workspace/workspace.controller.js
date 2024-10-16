@@ -22,7 +22,8 @@ exports.createWorkspace = async (req, res) => {
 // Get all workspaces
 exports.getWorkspaces = async (req, res) => {
   try {
-    const workspaces = await Workspace.find();
+    const owner_email = req.body.owner_email;
+    const workspaces = await Workspace.find({ owner_email });
     res.json(workspaces);
   } catch (error) {
     res.status(500).json({ message: error.message });

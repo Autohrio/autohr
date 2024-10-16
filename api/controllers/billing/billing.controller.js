@@ -1,5 +1,5 @@
 const { Billing, Workspace } = require('../../models/models');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+// const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Create a new billing plan
 exports.createBillingPlan = async (req, res) => {
@@ -102,9 +102,9 @@ exports.changeBillingPlan = async (req, res) => {
     if (!workspace.billing) return res.status(404).json({ message: 'Billing plan not found for this workspace' });
 
     // Update the plan in Stripe
-    await stripe.subscriptions.update(workspace.billing.stripeSubscriptionId, {
-      items: [{ plan: newPlan }]
-    });
+    // await stripe.subscriptions.update(workspace.billing.stripeSubscriptionId, {
+    //   items: [{ plan: newPlan }]
+    // });
 
     // Update the plan in our database
     workspace.billing.plan = newPlan;
@@ -124,7 +124,7 @@ exports.getBillingInvoice = async (req, res) => {
     if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
     if (!workspace.billing) return res.status(404).json({ message: 'Billing plan not found for this workspace' });
 
-    const invoice = await stripe.invoices.retrieve(workspace.billing.stripeLatestInvoiceId);
+    // const invoice = await stripe.invoices.retrieve(workspace.billing.stripeLatestInvoiceId);
     res.json(invoice);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -140,9 +140,9 @@ exports.updatePaymentMethod = async (req, res) => {
     if (!workspace.billing) return res.status(404).json({ message: 'Billing plan not found for this workspace' });
 
     // Update the payment method in Stripe
-    await stripe.customers.update(workspace.billing.stripeCustomerId, {
-      invoice_settings: { default_payment_method: paymentMethodId }
-    });
+    // await stripe.customers.update(workspace.billing.stripeCustomerId, {
+    //   invoice_settings: { default_payment_method: paymentMethodId }
+    // });
 
     res.json({ message: 'Payment method updated successfully' });
   } catch (error) {

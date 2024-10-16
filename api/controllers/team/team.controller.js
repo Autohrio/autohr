@@ -84,6 +84,8 @@ exports.getTeamMembers = async (req, res) => {
 };
 
 // Add a member to team
+// @params: { id }
+// @payload: { name, email, role, occupation }
 exports.addMemberToTeam = async (req, res) => {
   try {
     const team = await Team.findById(req.params.id);
