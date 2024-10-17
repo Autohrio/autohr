@@ -47,28 +47,28 @@ router.get('/teams/:id', teamController.getTeamById);
 router.put('/teams/:id', teamController.updateTeam);
 router.delete('/teams/:id', teamController.deleteTeam);
 router.get('/teams/:id/members', teamController.getTeamMembers);
-router.post('/teams/:id/members', teamController.addMemberToTeam);
-router.delete('/teams/:id/members/:memberId', teamController.removeMemberFromTeam);
+router.post('/teams/:teamId/members', teamController.addMemberToTeam);
+router.delete('/teams/:teamId/members/:memberId', teamController.removeMemberFromTeam);
 router.put('/teams/:id/members/:memberId/role', teamController.updateTeamMemberRole);
 router.get('/workspaces/:workspaceId/teams', teamController.getTeamsByWorkspace);
-
+router.get('/workspace/:workspaceId/members', teamController.getTeamMembersByWorkspace);
 
 
 // Onboarding routes
-router.post('/onboardings', onboardingController.createOnboarding);
-router.get('/onboardings', onboardingController.getAllOnboardings);
-router.get('/onboardings/:id', onboardingController.getOnboardingById);
-router.put('/onboardings/:id', onboardingController.updateOnboarding);
-router.delete('/onboardings/:id', onboardingController.deleteOnboarding);
+// router.post('/onboardings', onboardingController.createOnboarding);
+// router.get('/onboardings', onboardingController.getAllOnboardings);
+// router.get('/onboardings/:id', onboardingController.getOnboardingById);
+// router.put('/onboardings/:id', onboardingController.updateOnboarding);
+// router.delete('/onboardings/:id', onboardingController.deleteOnboarding);
 
 // Candidate routes
-router.post('/candidates', onboardingController.createCandidate);
-router.get('/candidates', onboardingController.getAllCandidates);
-router.get('/candidates/:id', onboardingController.getCandidateById);
-router.put('/candidates/:id', onboardingController.updateCandidate);
-router.delete('/candidates/:id', onboardingController.deleteCandidate);
-router.put('/candidates/:id/interview-status', onboardingController.updateCandidateInterviewStatus);
-router.get('/onboardings/:onboardingId/candidates', onboardingController.getCandidatesByOnboarding);
+// router.post('/candidates', onboardingController.createCandidate);
+// router.get('/candidates', onboardingController.getAllCandidates);
+// router.get('/candidates/:id', onboardingController.getCandidateById);
+// router.put('/candidates/:id', onboardingController.updateCandidate);
+// router.delete('/candidates/:id', onboardingController.deleteCandidate);
+// router.put('/candidates/:id/interview-status', onboardingController.updateCandidateInterviewStatus);
+// router.get('/onboardings/:onboardingId/candidates', onboardingController.getCandidatesByOnboarding);
 
 // policies routes
 router.post('/policies', policyController.createPolicy);
