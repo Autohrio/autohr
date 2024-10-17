@@ -1,39 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useWorkspace } from '@/context/useWorkspace'; // Update the import path as needed
+import { getEmailConfiguration, updateEmailConfiguration, EmailConfiguration } from '@/api'; // Update the import path as needed
 
 const Email: React.FC = () => {
-  const [smtpConfig, setSmtpConfig] = useState({
-    host: '',
-    port: '',
-    username: '',
-    password: '',
-    fromEmail: '',
-  });
+  const { currentWorkspace } = useWorkspace();
+  const [emailConfig, setEmailConfig] = useState<EmailConfiguration | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [offerTemplate, setOfferTemplate] = useState('');
-  const [rejectionTemplate, setRejectionTemplate] = useState('');
+  useEffect(() => {
+    const fetchEmailConfig = async () => {
+      if (!currentWorkspace) return;
+      try {
+        const config = await getEmailConfiguration(currentWorkspace._id);
+        setEmailConfig(config);
+      } catch (err) {
+        setError('Failed to fetch email configuration');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmailConfig();
+  }, [currentWorkspace]);
 
   const handleSmtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSmtpConfig(prev => ({ ...prev, [name]: value }));
+    setEmailConfig(prev => prev ? {
+      ...prev,
+      smtp_config: {
+        ...prev.smtp_config,
+        [name]: value
+      }
+    } : null);
   };
 
-  const handleTemplateChange = (e: React.ChangeEvent<HTMLTextAreaElement>, setTemplate: React.Dispatch<React.SetStateAction<string>>) => {
-    setTemplate(e.target.value);
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLTextAreaElement>, templateName: 'offer_template' | 'rejection_template') => {
+    setEmailConfig(prev => prev ? {
+      ...prev,
+      templates: {
+        ...prev.templates,
+        [templateName]: e.target.value
+      }
+    } : null);
   };
 
-  const handleSaveConfig = () => {
-    console.log('Saving SMTP configuration:', smtpConfig);
-    // Here you would typically send this data to your backend
+  const handleSaveConfig = async () => {
+    if (!currentWorkspace || !emailConfig) return;
+    try {
+      await updateEmailConfiguration(currentWorkspace._id, {
+        smtp_config: emailConfig.smtp_config
+      });
+      console.log('SMTP configuration saved successfully');
+    } catch (err) {
+      console.error('Failed to save SMTP configuration:', err);
+    }
   };
 
-  const handleSaveTemplates = () => {
-    console.log('Saving email templates:', { offerTemplate, rejectionTemplate });
-    // Here you would typically send this data to your backend
+  const handleSaveTemplates = async () => {
+    if (!currentWorkspace || !emailConfig) return;
+    try {
+      await updateEmailConfiguration(currentWorkspace._id, {
+        templates: emailConfig.templates
+      });
+      console.log('Email templates saved successfully');
+    } catch (err) {
+      console.error('Failed to save email templates:', err);
+    }
   };
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!emailConfig) return <div>No email configuration found</div>;
 
   return (
     <div className="container mx-auto p-4">
@@ -46,23 +89,23 @@ const Email: React.FC = () => {
           <form className="space-y-4">
             <div>
               <Label htmlFor="host">SMTP Host</Label>
-              <Input id="host" name="host" value={smtpConfig.host} onChange={handleSmtpChange} placeholder="e.g. smtp.gmail.com" />
+              <Input id="host" name="host" value={emailConfig.smtp_config.host} onChange={handleSmtpChange} placeholder="e.g. smtp.gmail.com" />
             </div>
             <div>
               <Label htmlFor="port">SMTP Port</Label>
-              <Input id="port" name="port" value={smtpConfig.port} onChange={handleSmtpChange} placeholder="e.g. 587" />
+              <Input id="port" name="port" value={emailConfig.smtp_config.port} onChange={handleSmtpChange} placeholder="e.g. 587" />
             </div>
             <div>
               <Label htmlFor="username">Username</Label>
-              <Input id="username" name="username" value={smtpConfig.username} onChange={handleSmtpChange} />
+              <Input id="username" name="username" value={emailConfig.smtp_config.username} onChange={handleSmtpChange} />
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" value={smtpConfig.password} onChange={handleSmtpChange} />
+              <Input id="password" name="password" type="password" value={emailConfig.smtp_config.password} onChange={handleSmtpChange} />
             </div>
             <div>
               <Label htmlFor="fromEmail">From Email</Label>
-              <Input id="fromEmail" name="fromEmail" value={smtpConfig.fromEmail} onChange={handleSmtpChange} placeholder="noreply@yourcompany.com" />
+              <Input id="fromEmail" name="fromEmail" value={emailConfig.smtp_config.fromEmail} onChange={handleSmtpChange} placeholder="noreply@yourcompany.com" />
             </div>
             <Button onClick={handleSaveConfig}>Save SMTP Configuration</Button>
           </form>
@@ -76,8 +119,8 @@ const Email: React.FC = () => {
               <Label htmlFor="offerTemplate">Offer Email Template</Label>
               <Textarea
                 id="offerTemplate"
-                value={offerTemplate}
-                onChange={(e) => handleTemplateChange(e, setOfferTemplate)}
+                value={emailConfig.templates.offer_template}
+                onChange={(e) => handleTemplateChange(e, 'offer_template')}
                 placeholder="Dear {name},&#10;&#10;We are pleased to offer you the position of..."
                 className="h-40"
               />
@@ -86,8 +129,8 @@ const Email: React.FC = () => {
               <Label htmlFor="rejectionTemplate">Rejection Email Template</Label>
               <Textarea
                 id="rejectionTemplate"
-                value={rejectionTemplate}
-                onChange={(e) => handleTemplateChange(e, setRejectionTemplate)}
+                value={emailConfig.templates.rejection_template}
+                onChange={(e) => handleTemplateChange(e, 'rejection_template')}
                 placeholder="Dear {name},&#10;&#10;Thank you for your interest in our company..."
                 className="h-40"
               />

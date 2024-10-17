@@ -46,10 +46,11 @@ exports.getAllEmailConfigs = async (req, res) => {
   }
 };
 
-// Get a single email configuration by ID
-exports.getEmailConfigById = async (req, res) => {
+// Get a single email configuration by ID (Approved)
+// @params: id -> workspaceId
+exports.getEmailConfigByWorkspaceId = async (req, res) => {
   try {
-    const email = await Email.findById(req.params.id).populate('smtp_config templates');
+    const email = await Email.findOne({ workspace: req.params.id })
     if (!email) return res.status(404).json({ message: 'Email configuration not found' });
     res.json(email);
   } catch (error) {
@@ -75,6 +76,36 @@ exports.updateEmailConfig = async (req, res) => {
     res.json(updatedEmail);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+exports.updateEmailConfiguration = async (req, res) => {
+  try {
+    const { workspaceId } = req.params; // This is the workspaceId
+    const updates = req.body;
+
+    const emailConfig = await Email.findOne({ workspace: workspaceId });
+    
+    if (!emailConfig) {
+      return res.status(404).json({ message: 'Email configuration not found' });
+    }
+
+    // Update SMTP config
+    if (updates.smtp_config) {
+      Object.assign(emailConfig.smtp_config, updates.smtp_config);
+    }
+
+    // Update templates
+    if (updates.templates) {
+      Object.assign(emailConfig.templates, updates.templates);
+    }
+
+    await emailConfig.save();
+
+    res.status(200).json(emailConfig);
+  } catch (error) {
+    console.error('Error in updateEmailConfiguration:', error);
+    res.status(400).json({ message: 'Error updating email configuration', error: error.message });
   }
 };
 

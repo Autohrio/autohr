@@ -109,7 +109,7 @@ exports.getTeamMembersByWorkspace = async (req, res) => {
   }
 };
 
-// Add a member to team
+// Add a member to team (Approved)
 // POST /teams/:teamId/members 
 // @params: { teamId }
 // @payload: { name, email, role, occupation, workspace }

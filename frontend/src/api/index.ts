@@ -200,3 +200,58 @@ export const getCandidatesByWorkspace = async (workspaceId: string): Promise<Can
     throw error;
   }
 };
+
+export interface SMTPConfig {
+  host: string;
+  port: string;
+  username: string;
+  password: string;
+  fromEmail: string;
+}
+
+export interface EmailTemplates {
+  offer_template: string;
+  rejection_template: string;
+}
+
+export interface EmailConfiguration {
+  _id: string;
+  workspace: string;
+  smtp_config: SMTPConfig;
+  templates: EmailTemplates;
+}
+
+export const getEmailConfiguration = async (workspaceId: string): Promise<EmailConfiguration> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/emails/${workspaceId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch email configuration');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching email configuration:', error);
+    throw error;
+  }
+};
+
+export const updateEmailConfiguration = async (
+  workspaceId: string, 
+  updates: Partial<{smtp_config: Partial<SMTPConfig>, templates: Partial<EmailTemplates>}>
+): Promise<EmailConfiguration> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/emails/${workspaceId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update email configuration');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating email configuration:', error);
+    throw error;
+  }
+};

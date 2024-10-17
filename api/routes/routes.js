@@ -97,10 +97,11 @@ router.get('/compliances/search', complianceController.searchCompliances);
 router.get('/workspaces/:workspaceId/compliance-status', complianceController.getComplianceStatus);
 
 // email routes
-router.post('/emails', emailController.createEmailConfig);
-router.get('/emails', emailController.getAllEmailConfigs);
-router.get('/emails/:id', emailController.getEmailConfigById);
-router.put('/emails/:id', emailController.updateEmailConfig);
+// router.post('/emails', emailController.createEmailConfig);
+// router.get('/emails', emailController.getAllEmailConfigs);
+router.get('/emails/:id', emailController.getEmailConfigByWorkspaceId); 
+router.patch('/emails/:workspaceId', emailController.updateEmailConfiguration);
+
 router.delete('/emails/:id', emailController.deleteEmailConfig);
 router.get('/workspaces/:workspaceId/emails', emailController.getEmailConfigsByWorkspace);
 router.post('/emails/test', emailController.sendTestEmail);
