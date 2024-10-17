@@ -14,6 +14,23 @@ interface TeamMemberProps {
   onRoleChange: (memberId: string, newRole: string) => void;
 }
 
+export interface WorkspaceStateDTO {
+  _id: string;
+  name: string;
+  owner_email: string;
+  teams: string[];
+  onboardings: string[];
+  policies: string[];
+  compliances: string[];
+  meetings: string[];
+  emails: string[];
+  apiKeys: string[];
+  employeeFeedbacks: string[];
+  companyFeedbacks: string[];
+  __v: number;
+}
+
+
 const TeamMember: React.FC<TeamMemberProps> = ({ member, onRoleChange }) => {
   const { _id, name, email, role, occupation, teams } = member;
 
@@ -73,7 +90,7 @@ const Team: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { currentWorkspace } = useWorkspace();
-  const teamId = ''
+  const [teamId, setTeamId] = useState<string>("");
 
   useEffect(() => {
     const fetchTeamMembers = async (workspaceId: string) => {
@@ -89,6 +106,7 @@ const Team: React.FC = () => {
 
     if (currentWorkspace && currentWorkspace) {
       fetchTeamMembers(currentWorkspace._id);
+      setTeamId(currentWorkspace.teams[0])
     } else {
       setIsLoading(false);
       setError('No workspace selected');

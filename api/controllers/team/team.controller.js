@@ -1,6 +1,6 @@
 const { Team, Workspace, TeamMember } = require('../../models/models');
-
-// Create a new team
+const mongoose = require('mongoose');
+// Create a new team (re-validate the the controller/ may get deprecated)
 exports.createTeam = async (req, res) => {
   try {
     const { workspaceId, ...teamData } = req.body;
@@ -83,22 +83,92 @@ exports.getTeamMembers = async (req, res) => {
   }
 };
 
+exports.getTeamMembersByWorkspace = async (req, res) => {
+  try {
+    const { workspaceId } = req.params; // Assuming the workspace ID is passed as a route parameter
+
+    // Find all team members for the given workspace
+    const teamMembers = await TeamMember.find({ workspace: workspaceId })
+      .select('name role email occupation') // Select only the fields you want to return
+      .populate({
+        path: 'teams',
+        select: 'name', // Only populate the team name
+      });
+
+    if (!teamMembers.length) {
+      return res.status(404).json({ message: 'No team members found for this workspace' });
+    }
+
+    res.status(200).json({
+      message: 'Team members retrieved successfully',
+      members: teamMembers
+    });
+  } catch (error) {
+    console.error('Error in getTeamMembersByWorkspace:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Add a member to team
-// @params: { id }
-// @payload: { name, email, role, occupation }
+// POST /teams/:teamId/members 
+// @params: { teamId }
+// @payload: { name, email, role, occupation, workspace }
 exports.addMemberToTeam = async (req, res) => {
   try {
-    const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ message: 'Team not found' });
-    
-    const newMember = new TeamMember(req.body);
-    await newMember.save();
-    
-    team.members.push(newMember._id);
+    const { teamId } = req.params;
+    const { name, email, role, occupation } = req.body;
+
+    // Validate teamId
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({ message: 'Invalid team ID' });
+    }
+
+    // Find the team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    // Find the workspace associated with the team
+    const workspace = await Workspace.findById(team.workspace);
+    if (!workspace) {
+      return res.status(404).json({ message: 'Workspace not found' });
+    }
+
+    // Check if the member already exists in the workspace
+    let teamMember = await TeamMember.findOne({ email, workspace: workspace._id });
+
+    if (teamMember) {
+      // If the member exists, check if they're already in the team
+      if (team.members.includes(teamMember._id)) {
+        return res.status(400).json({ message: 'Member already exists in this team' });
+      }
+    } else {
+      // If the member doesn't exist, create a new TeamMember
+      teamMember = new TeamMember({
+        name,
+        email,
+        role,
+        occupation,
+        workspace: workspace._id
+      });
+      await teamMember.save();
+    }
+
+    // Add the member to the team
+    team.members.push(teamMember._id);
     await team.save();
-    
-    res.status(201).json(newMember);
+
+    // Add the team to the member's teams array
+    teamMember.teams.push(team._id);
+    await teamMember.save();
+
+    res.status(201).json({
+      message: 'Member added to team successfully',
+      members: teamMember
+    });
   } catch (error) {
+    console.error('Error in addMemberToTeam:', error);
     res.status(400).json({ message: error.message });
   }
 };
@@ -106,17 +176,48 @@ exports.addMemberToTeam = async (req, res) => {
 // Remove a member from team
 exports.removeMemberFromTeam = async (req, res) => {
   try {
-    const team = await Team.findById(req.params.id);
-    if (!team) return res.status(404).json({ message: 'Team not found' });
-    
-    team.members = team.members.filter(m => m.toString() !== req.params.memberId);
+    const { teamId, memberId } = req.params;
+
+    // Validate IDs
+    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(memberId)) {
+      return res.status(400).json({ message: 'Invalid team ID or member ID' });
+    }
+
+    // Find the team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    // Find the team member
+    const teamMember = await TeamMember.findById(memberId);
+    if (!teamMember) {
+      return res.status(404).json({ message: 'Team member not found' });
+    }
+
+    // Check if the member is in the team
+    if (!team.members.includes(memberId)) {
+      return res.status(400).json({ message: 'Member is not in this team' });
+    }
+
+    // Remove the member from the team
+    team.members = team.members.filter(m => m.toString() !== memberId);
     await team.save();
-    
-    // Optionally, delete the TeamMember document if it's not referenced elsewhere
-    await TeamMember.findByIdAndDelete(req.params.memberId);
-    
-    res.json({ message: 'Team member removed successfully' });
+
+    // Remove the team from the member's teams array
+    teamMember.teams = teamMember.teams.filter(t => t.toString() !== teamId);
+    await teamMember.save();
+
+    // If the member is not in any teams, optionally delete the TeamMember document
+    if (teamMember.teams.length === 0) {
+      await TeamMember.findByIdAndDelete(memberId);
+      res.json({ message: 'Team member removed successfully and deleted from the system' });
+    } else {
+      res.json({ message: 'Team member removed successfully from the team' });
+    }
+
   } catch (error) {
+    console.error('Error in removeMemberFromTeam:', error);
     res.status(400).json({ message: error.message });
   }
 };

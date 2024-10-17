@@ -13,7 +13,16 @@ export interface UserData {
 export interface Workspace {
   _id: string;
   name: string;
-  // owner_email: string;
+  owner_email: string;
+  teams: string[];
+  onboardings: string[];
+  policies: string[];
+  compliances: string[];
+  meetings: string[];
+  emails: string[];
+  apiKeys: string[];
+  employeeFeedbacks: string[];
+  companyFeedbacks: string[];
 }
 
 export interface TeamMember {
@@ -144,15 +153,12 @@ export const addMemberToTeam = async (teamId: string, memberData: AddMemberData)
       throw new Error('Failed to add team member');
     }
     const data = await response.json();
-    return data.teamMember;
+    return data.members;
   } catch (error) {
     console.error('Error adding team member:', error);
     throw error;
   }
 };
-
-// api.ts
-// ... (previous code remains the same)
 
 export interface Candidate {
   _id?: string;
