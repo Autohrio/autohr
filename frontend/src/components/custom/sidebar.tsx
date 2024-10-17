@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -9,13 +9,7 @@ import { useUser } from '@/context/useUser';
 
 const Sidebar = () => {
   const { setWorkspaces, setCurrentWorkspace, currentWorkspace, workspaces } = useWorkspace();
-
   const { user } = useUser();
-
-  // const handleWorkspaceChange = (workspace: string) => {
-  //   setActiveWorkspace(workspace);
-  //   // You can add additional logic here, such as updating the UI or making API calls
-  // };
 
   const getWorkspaces = async () => {
     if (user) {
@@ -34,7 +28,7 @@ const Sidebar = () => {
   useEffect(() => {
     getWorkspaces()
   }, [])
-  
+
 
   return (
     <div className="space-y-4">
@@ -49,7 +43,10 @@ const Sidebar = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
             {workspaces?.map((workspace) => (
-              <DropdownMenuItem onClick={() => setCurrentWorkspace(workspace)}>
+              <DropdownMenuItem
+                key={workspace._id}
+                onClick={() => setCurrentWorkspace(workspace)}
+              >
                 {workspace.name}
               </DropdownMenuItem>
             ))}
