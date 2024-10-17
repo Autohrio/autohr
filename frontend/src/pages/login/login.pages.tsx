@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from '@/context/useAuth';
 import { checkUserEmailAlreadyExists } from '@/api';
@@ -60,7 +60,7 @@ const Login: React.FC = () => {
       </div>
       {/* Right side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <Card className="w-full max-w-md">
+        <div className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Create an account or sign in</CardTitle>
             <CardDescription>Enter your email below to create your account</CardDescription>
@@ -91,7 +91,7 @@ const Login: React.FC = () => {
               <a href="/" className="underline">Privacy Policy</a>.
             </div>
           </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );
