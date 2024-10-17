@@ -11,9 +11,25 @@ export interface UserData {
 }
 
 export interface Workspace {
-  id: string;
+  _id: string;
   name: string;
   // owner_email: string;
+}
+
+export interface TeamMember {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  occupation?: string;
+  teams: { _id: string; name: string }[];
+}
+
+export interface AddMemberData {
+  name: string;
+  email: string;
+  role: string;
+  occupation?: string;
 }
 
 export const checkUserEmailAlreadyExists = async (email: string): Promise<UserData | null> => {
@@ -89,6 +105,48 @@ export const createWorkspace = async (name: string, owner_email: string | undefi
     return await response.json();
   } catch (error) {
     console.error('Error creating workspaces:', error);
+    throw error;
+  }
+};
+
+export const getTeamMembersByWorkspace = async (workspaceId: string): Promise<TeamMember[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspace/${workspaceId}/members`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch team members');
+    }
+    const data = await response.json();
+    return data.members;
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+    throw error;
+  }
+};
+
+
+
+
+export const addMemberToTeam = async (teamId: string, memberData: AddMemberData): Promise<TeamMember> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/members`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(memberData),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add team member');
+    }
+    const data = await response.json();
+    return data.teamMember;
+  } catch (error) {
+    console.error('Error adding team member:', error);
     throw error;
   }
 };
