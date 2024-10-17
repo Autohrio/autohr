@@ -1,20 +1,94 @@
-const { Workspace, User } = require('../../models/models');
+const { Workspace, User, Team, TeamMember, Onboarding, Email, Settings  } = require('../../models/models');
 
+// Create a new workspace
+// Step 1. create Workspace
+// step 2. link the workspace to the user by pushing it to user.workspaces
+// step 3. create a team, add user to that team as owner
 // Create a new workspace
 exports.createWorkspace = async (req, res) => {
   try {
-    const workspace = new Workspace(req.body);
+    const { name, owner_email } = req.body;
+
+    // Step 1: Create Workspace
+    const workspace = new Workspace({
+      name,
+      owner_email
+    });
     await workspace.save();
 
-    // Add workspace to user's workspaces
-    const user = await User.findOne({ email: workspace.owner_email });
-    if (user) {
-      user.workspaces.push(workspace._id);
-      await user.save();
+    // Step 2: Link the workspace to the user
+    const user = await User.findOne({ email: owner_email });
+    if (!user) {
+      throw new Error('User not found');
     }
+    user.workspaces.push(workspace._id);
+    await user.save();
+
+    // Step 3: Create a TeamMember entry for the user
+    const teamMember = new TeamMember({
+      name: user.name,
+      role: 'owner',
+      email: user.email,
+      workspace: workspace._id
+    });
+    await teamMember.save();
+
+    // Step 4: Create a team and add the TeamMember
+    const team = new Team({
+      name: `${workspace.name} Team`,
+      workspace: workspace._id,
+      members: [teamMember._id]
+    });
+    await team.save();
+
+    // Step 5: Update TeamMember with the team
+    teamMember.teams.push(team._id);
+    await teamMember.save();
+
+    // Step 6: Add team to workspace
+    workspace.teams.push(team._id);
+
+    // Step 7: Create Onboarding for the workspace
+    const onboarding = new Onboarding({
+      workspace: workspace._id,
+      candidates: []
+    });
+    await onboarding.save();
+    workspace.onboardings = onboarding._id;
+
+    // Step 8: Create Email configuration for the workspace
+    const email = new Email({
+      workspace: workspace._id,
+      smtp_config: {
+        host: 'smtp.mail.com',
+        port: '465',
+        username: 'smtp_username',
+        password: 'smtp_password',
+        fromEmail: 'demo@autohr.dev'
+      },
+      templates: {
+        offer_template: '',
+        rejection_template: ''
+      }
+    });
+    await email.save();
+    workspace.emails.push(email._id);
+
+    // Step 9: Create Settings for the workspace
+    const settings = new Settings({
+      workspace: workspace._id,
+      preferred_language: 'en',
+      notifications_enabled: false
+    });
+    await settings.save();
+    workspace.settings = settings._id;
+
+    // Save the updated workspace
+    await workspace.save();
 
     res.status(201).json(workspace);
   } catch (error) {
+    console.error('Error in createWorkspace:', error);
     res.status(400).json({ message: error.message });
   }
 };
