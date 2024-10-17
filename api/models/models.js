@@ -33,28 +33,34 @@ const workspaceSchema = new Schema({
 // Team Schema
 const teamSchema = new Schema({
   name: { type: String, required: true },
+  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
   members: [{ type: Schema.Types.ObjectId, ref: 'TeamMember' }]
 });
 
 // Team Member Schema
 const teamMemberSchema = new Schema({
   name: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'member', 'guest'], required: true },
+  role: { type: String, enum: ['owner', 'member', 'guest'], required: true },
   occupation: String,
-  email: { type: String, required: true, unique: true }
+  email: { type: String, required: true },
+  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
+  teams: [{ type: Schema.Types.ObjectId, ref: 'Team' }]
 });
+
+teamMemberSchema.index({ email: 1, workspace: 1 }, { unique: true });
 
 // Onboarding Schema
 const onboardingSchema = new Schema({
+  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
   candidates: [{ type: Schema.Types.ObjectId, ref: 'Candidate' }]
 });
 
-// Candidate Schema
 const candidateSchema = new Schema({
   name: { type: String, required: true },
   occupation: String,
   email: { type: String, required: true, unique: true },
-  interview_status: String
+  interview_status: String,
+  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true }
 });
 
 // Policy Schema
@@ -74,8 +80,18 @@ const meetingSchema = new Schema({
 
 // Email Schema
 const emailSchema = new Schema({
-  smtp_config: { type: Schema.Types.ObjectId, ref: 'EmailSMTPConfig' },
-  templates: { type: Schema.Types.ObjectId, ref: 'EmailTemplates' }
+  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
+  smtp_config: {
+    host: { type: String, required: true },
+    port: { type: String, required: true },
+    username: { type: String, required: true },
+    password: { type: String, required: true },
+    fromEmail: { type: String, required: true }
+  },
+  templates: {
+    offer_template: { type: String, default: '' },
+    rejection_template: { type: String, default: '' }
+  }
 });
 
 // Email SMTP Config Schema
