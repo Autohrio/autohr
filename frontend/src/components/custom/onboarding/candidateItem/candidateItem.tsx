@@ -4,20 +4,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Candidate } from "@/api";
 
-interface Candidate {
-  name: string;
-  email: string;
-  status: string;
-  avatarUrl?: string;
-  position: string;
-}
-
-const CandidateItem: React.FC<Candidate> = ({ name, email, status, avatarUrl, position }) => (
-  <div className="flex items-center justify-between py-4">
+const CandidateItem: React.FC<Candidate> = ({ name, email, interview_status, position, _id }) => (
+  <div className="flex items-center justify-between py-4" key={_id}>
     <div className="flex items-center space-x-4">
       <Avatar>
-        <AvatarImage src={avatarUrl} alt={name} />
+        <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${name}`} alt={name} />
         <AvatarFallback>{name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
       </Avatar>
       <div>
@@ -28,7 +21,7 @@ const CandidateItem: React.FC<Candidate> = ({ name, email, status, avatarUrl, po
       </div>
     </div>
     <div className="flex items-center space-x-2">
-      <Select defaultValue={status}>
+      <Select defaultValue={interview_status}>
         <SelectTrigger className="w-[180px]">
           <SelectValue />
         </SelectTrigger>

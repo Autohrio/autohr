@@ -1,36 +1,68 @@
-import React, { useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AddCandidate from './addCandidate/addCandidate';
 import CandidateItem from './candidateItem/candidateItem';
-
-interface Candidate {
-  name: string;
-  email: string;
-  status: string;
-  avatarUrl?: string;
-  position: string;
-}
-
+import { Candidate, getCandidatesByWorkspace, addCandidate } from '@/api'; // Update the import path as needed
+import { useWorkspace } from '@/context/useWorkspace';
 
 const Onboarding: React.FC = () => {
   const [isAddCandidateOpen, setIsAddCandidateOpen] = useState(false);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { currentWorkspace } = useWorkspace();
 
-  const candidates: Candidate[] = [
-    { name: "Alice Johnson", email: "alice@example.com", status: "Technical Round 1", position: "Frontend Developer" },
-    { name: "Bob Smith", email: "bob@example.com", status: "Culture Fit", position: "DevOps Engineer" },
-    { name: "Charlie Brown", email: "charlie@example.com", status: "Accepted", position: "Backend Developer" },
-    { name: "Diana Prince", email: "diana@example.com", status: "Technical Round 2", position: "Full Stack Developer" },
-    { name: "Ethan Hunt", email: "ethan@example.com", status: "Accepted", position: "Product Manager" },
-  ];
+  useEffect(() => {
+    if (currentWorkspace && currentWorkspace) {
+      fetchCandidates(currentWorkspace._id);
+    } else {
+      setIsLoading(false);
+      setError('No workspace selected');
+    }
+  }, [currentWorkspace]);
 
-  const ongoingCandidates = candidates.filter(c => c.status !== "Accepted");
-  const acceptedCandidates = candidates.filter(c => c.status === "Accepted");
+ 
+  const fetchCandidates = async (workspaceId: string) => {
+    try {
+      setIsLoading(true);
+      const fetchedCandidates = await getCandidatesByWorkspace(workspaceId);
+      setCandidates(fetchedCandidates);
+    } catch (err) {
+      setError('Failed to fetch candidates');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddCandidate = async (newCandidate: Omit<Candidate, '_id'>) => {
+    try {
+      if (currentWorkspace?._id) {
+        const addedCandidate = await addCandidate({ ...newCandidate, workspaceId: currentWorkspace?._id });
+        setCandidates(prev => [...prev, addedCandidate]);
+        setIsAddCandidateOpen(false);
+      }
+    } catch (err) {
+      setError('Failed to add candidate');
+      console.error(err);
+    }
+  };
+
+  const ongoingCandidates = candidates.filter(c => c.interview_status !== "Accepted");
+  const acceptedCandidates = candidates.filter(c => c.interview_status === "Accepted");
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto p-6">
-      <AddCandidate open={isAddCandidateOpen} onOpenChange={setIsAddCandidateOpen} />
+      <AddCandidate 
+        open={isAddCandidateOpen} 
+        onOpenChange={setIsAddCandidateOpen}
+        onSubmit={handleAddCandidate}
+      />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Onboarding</h1>
         <Button onClick={() => setIsAddCandidateOpen(true)}>Add Candidate</Button>
@@ -40,15 +72,15 @@ const Onboarding: React.FC = () => {
           <CardTitle>Candidates in the hiring process</CardTitle>
         </CardHeader>
         <CardContent>
-          {ongoingCandidates.map((candidate, index) => (
-            <CandidateItem key={index} {...candidate} />
+          {ongoingCandidates.map((candidate) => (
+            <CandidateItem key={candidate._id} {...candidate} />
           ))}
           {acceptedCandidates.length > 0 && (
             <>
               <Separator className="my-4" />
               <h3 className="text-lg font-semibold mb-2">Accepted Candidates</h3>
-              {acceptedCandidates.map((candidate, index) => (
-                <CandidateItem key={index} {...candidate} />
+              {acceptedCandidates.map((candidate) => (
+                <CandidateItem key={candidate._id} {...candidate} />
               ))}
             </>
           )}
