@@ -62,8 +62,10 @@ router.get('/workspace/:workspaceId/members', teamController.getTeamMembersByWor
 // router.delete('/onboardings/:id', onboardingController.deleteOnboarding);
 
 // Candidate routes
-// router.post('/candidates', onboardingController.createCandidate);
-// router.get('/candidates', onboardingController.getAllCandidates);
+router.post('/candidates', onboardingController.createCandidate);
+router.get('/workspace/:workspaceId/candidates', onboardingController.getCandidatesByWorkspace);
+
+// router.get('/candidates/:id', onboardingController.getCandidatesByWorkspace);
 // router.get('/candidates/:id', onboardingController.getCandidateById);
 // router.put('/candidates/:id', onboardingController.updateCandidate);
 // router.delete('/candidates/:id', onboardingController.deleteCandidate);

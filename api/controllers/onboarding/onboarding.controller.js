@@ -1,94 +1,103 @@
 const { Onboarding, Candidate, Workspace } = require('../../models/models');
 
-// Create a new onboarding process
-exports.createOnboarding = async (req, res) => {
-  try {
-    const { workspaceId, ...onboardingData } = req.body;
-    const onboarding = new Onboarding(onboardingData);
-    await onboarding.save();
+// exports.createOnboarding = async (req, res) => {
+//   try {
+//     const { workspaceId } = req.body;
+    
+//     // Check if workspace exists
+//     const workspace = await Workspace.findById(workspaceId);
+//     if (!workspace) {
+//       return res.status(404).json({ message: 'Workspace not found' });
+//     }
 
-    // Add onboarding to workspace
-    if (workspaceId) {
-      const workspace = await Workspace.findById(workspaceId);
-      if (workspace) {
-        workspace.onboardings.push(onboarding._id);
-        await workspace.save();
-      }
-    }
+//     // Check if workspace already has an onboarding
+//     if (workspace.onboardings) {
+//       return res.status(400).json({ message: 'Workspace already has an onboarding process' });
+//     }
 
-    res.status(201).json(onboarding);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+//     const onboarding = new Onboarding({ workspace: workspaceId });
+//     await onboarding.save();
 
-// Get all onboarding processes
-exports.getAllOnboardings = async (req, res) => {
-  try {
-    const onboardings = await Onboarding.find();
-    res.json(onboardings);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+//     // Add onboarding to workspace
+//     workspace.onboardings = onboarding._id;
+//     await workspace.save();
 
-// Get a single onboarding process by ID
-exports.getOnboardingById = async (req, res) => {
-  try {
-    const onboarding = await Onboarding.findById(req.params.id).populate('candidates');
-    if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
-    res.json(onboarding);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+//     res.status(201).json(onboarding);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
 
-// Update an onboarding process
-exports.updateOnboarding = async (req, res) => {
-  try {
-    const onboarding = await Onboarding.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
-    res.json(onboarding);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+// // Get onboarding process by workspace ID
+// exports.getOnboardingByWorkspace = async (req, res) => {
+//   try {
+//     const { workspaceId } = req.params;
+//     const onboarding = await Onboarding.findOne({ workspace: workspaceId }).populate('candidates');
+//     if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
+//     res.json(onboarding);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
-// Delete an onboarding process
-exports.deleteOnboarding = async (req, res) => {
-  try {
-    const onboarding = await Onboarding.findByIdAndDelete(req.params.id);
-    if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
+// // Update an onboarding process
+// exports.updateOnboarding = async (req, res) => {
+//   try {
+//     const onboarding = await Onboarding.findOneAndUpdate(
+//       { workspace: req.params.workspaceId },
+//       req.body,
+//       { new: true, runValidators: true }
+//     );
+//     if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
+//     res.json(onboarding);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
 
-    // Remove onboarding from workspace
-    await Workspace.updateMany(
-      { onboardings: onboarding._id },
-      { $pull: { onboardings: onboarding._id } }
-    );
+// // Delete an onboarding process
+// exports.deleteOnboarding = async (req, res) => {
+//   try {
+//     const onboarding = await Onboarding.findOneAndDelete({ workspace: req.params.workspaceId });
+//     if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
 
-    // Optionally, delete all associated candidates
-    await Candidate.deleteMany({ _id: { $in: onboarding.candidates } });
+//     // Remove onboarding reference from workspace
+//     await Workspace.findByIdAndUpdate(req.params.workspaceId, { $unset: { onboarding: 1 } });
 
-    res.json({ message: 'Onboarding process deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+//     // Optionally, delete all associated candidates
+//     await Candidate.deleteMany({ workspace: req.params.workspaceId });
+
+//     res.json({ message: 'Onboarding process deleted successfully' });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 // Create a new candidate
+// POST /candidates
+// payload: { workspaceId, candidateData... }
 exports.createCandidate = async (req, res) => {
   try {
-    const { onboardingId, ...candidateData } = req.body;
-    const candidate = new Candidate(candidateData);
+    const { workspaceId, ...candidateData } = req.body;
+    
+    // Check if workspace exists
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ message: 'Workspace not found' });
+    }
+
+    // Check if onboarding exists for the workspace
+    const onboarding = await Onboarding.findOne({ workspace: workspaceId });
+    if (!onboarding) {
+      return res.status(404).json({ message: 'Onboarding process not found for this workspace' });
+    }
+
+    const candidate = new Candidate({ ...candidateData, workspace: workspaceId });
     await candidate.save();
 
-    if (onboardingId) {
-      const onboarding = await Onboarding.findById(onboardingId);
-      if (onboarding) {
-        onboarding.candidates.push(candidate._id);
-        await onboarding.save();
-      }
-    }
+    // Add candidate to onboarding
+    onboarding.candidates.push(candidate._id);
+    await onboarding.save();
 
     res.status(201).json(candidate);
   } catch (error) {
@@ -96,79 +105,15 @@ exports.createCandidate = async (req, res) => {
   }
 };
 
-// Get all candidates
-exports.getAllCandidates = async (req, res) => {
+// Get candidates by workspace
+exports.getCandidatesByWorkspace = async (req, res) => {
   try {
-    const candidates = await Candidate.find();
-    res.json(candidates);
+    const { workspaceId } = req.params;
+
+    const candidates = await Candidate.find({ workspace: workspaceId });
+    res.status(200).json(candidates);
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Get a single candidate by ID
-exports.getCandidateById = async (req, res) => {
-  try {
-    const candidate = await Candidate.findById(req.params.id);
-    if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
-    res.json(candidate);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Update a candidate
-exports.updateCandidate = async (req, res) => {
-  try {
-    const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
-    res.json(candidate);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// Delete a candidate
-exports.deleteCandidate = async (req, res) => {
-  try {
-    const candidate = await Candidate.findByIdAndDelete(req.params.id);
-    if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
-
-    // Remove candidate from onboarding process
-    await Onboarding.updateMany(
-      { candidates: candidate._id },
-      { $pull: { candidates: candidate._id } }
-    );
-
-    res.json({ message: 'Candidate deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Update candidate interview status
-exports.updateCandidateInterviewStatus = async (req, res) => {
-  try {
-    const { interview_status } = req.body;
-    const candidate = await Candidate.findByIdAndUpdate(
-      req.params.id,
-      { interview_status },
-      { new: true, runValidators: true }
-    );
-    if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
-    res.json(candidate);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// Get candidates by onboarding process
-exports.getCandidatesByOnboarding = async (req, res) => {
-  try {
-    const onboarding = await Onboarding.findById(req.params.onboardingId).populate('candidates');
-    if (!onboarding) return res.status(404).json({ message: 'Onboarding process not found' });
-    res.json(onboarding.candidates);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error fetching candidates:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };

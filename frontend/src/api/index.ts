@@ -150,3 +150,47 @@ export const addMemberToTeam = async (teamId: string, memberData: AddMemberData)
     throw error;
   }
 };
+
+// api.ts
+// ... (previous code remains the same)
+
+export interface Candidate {
+  _id?: string;
+  name: string;
+  email: string;
+  interview_status: string;
+  position: string;
+  workspaceId: string;
+}
+
+export const addCandidate = async (candidateData: Omit<Candidate, '_id'>): Promise<Candidate> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(candidateData),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to add candidate');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding candidate:', error);
+    throw error;
+  }
+};
+
+export const getCandidatesByWorkspace = async (workspaceId: string): Promise<Candidate[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspace/${workspaceId}/candidates`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch candidates');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching candidates:', error);
+    throw error;
+  }
+};
