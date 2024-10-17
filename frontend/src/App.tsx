@@ -1,18 +1,28 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
-import { Dashboard, Home, Login, Pricing, Settings } from '@/pages';
+import { Dashboard, Home, Pricing, Settings, Login, Register, Workspace } from '@/pages';
 import { ChatInterface, Compliance, Configure, DashboardIndex, Email, Feedback, Integration, Meetings, Onboarding, Policies, Team } from '@/components';
 import { AuthProvider, useAuth } from '@/context/useAuth';
-import { UserProvider } from '@/context/useUser';
-import { WorkspaceProvider } from '@/context/useWorkspace';
+import { UserProvider, useUser } from '@/context/useUser';
+import { WorkspaceProvider, useWorkspace } from '@/context/useWorkspace';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { session } = useAuth();
+  const { user } = useUser();
+  const { currentWorkspace } = useWorkspace();
   const location = useLocation();
 
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!user) {
+    return <Navigate to="/register" state={{ from: location }} replace />;
+  }
+
+  if (!currentWorkspace) {
+    return <Navigate to="/create-workspace" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
@@ -38,6 +48,8 @@ const AppRoutes: React.FC = () => {
           <Login />
         </PublicRoute>
       } />
+      <Route path="/register" element={<Register />} />
+      <Route path="/create-workspace" element={<Workspace />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/dashboard" element={
         <ProtectedRoute>
