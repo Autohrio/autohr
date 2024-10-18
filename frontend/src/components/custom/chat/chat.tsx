@@ -18,13 +18,15 @@ const ChatInterface: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [isUser, setIsUser] = useState<string>("user")
+  const [isUser, setIsUser] = useState<string>("bot");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+
   }, [messages]);
 
   const handleSendMessage = () => {
+    setIsUser("user")
     if (inputText.trim()) {
       const newMessage: Message = {
         id: Date.now(),

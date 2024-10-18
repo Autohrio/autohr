@@ -16,11 +16,17 @@ type ViewType = 'month' | 'week' | 'day';
 const Meetings: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<ViewType>('week');
-  const [events, setEvents] = useState<Event[]>([
+  // const [events, setEvents] = useState<Event[]>([
+  //   { id: '1', title: 'Breakfast', start: new Date(2024, 9, 12, 6, 0), end: new Date(2024, 9, 12, 7, 0), color: 'bg-blue-100' },
+  //   { id: '2', title: 'Flight to Paris', start: new Date(2024, 9, 12, 7, 30), end: new Date(2024, 9, 12, 10, 0), color: 'bg-pink-100' },
+  //   { id: '3', title: 'Meeting with design team', start: new Date(2024, 9, 14, 10, 0), end: new Date(2024, 9, 14, 11, 0), color: 'bg-gray-100' },
+  // ]);
+
+  const events: Event[] = [
     { id: '1', title: 'Breakfast', start: new Date(2024, 9, 12, 6, 0), end: new Date(2024, 9, 12, 7, 0), color: 'bg-blue-100' },
     { id: '2', title: 'Flight to Paris', start: new Date(2024, 9, 12, 7, 30), end: new Date(2024, 9, 12, 10, 0), color: 'bg-pink-100' },
     { id: '3', title: 'Meeting with design team', start: new Date(2024, 9, 14, 10, 0), end: new Date(2024, 9, 14, 11, 0), color: 'bg-gray-100' },
-  ]);
+  ]
 
   const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const hours = Array.from({ length: 24 }, (_, i) => i);
