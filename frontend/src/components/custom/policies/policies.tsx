@@ -172,7 +172,7 @@ const Policies: React.FC = () => {
             <Button onClick={handleDownload}><Download className="h-4 w-4 mr-2" /> Download</Button>
           </div>
         </div>
-        <Tabs defaultValue="edit" className="w-full">
+        <Tabs defaultValue="preview" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="edit">Edit</TabsTrigger>
             <TabsTrigger value="preview">Preview</TabsTrigger>

@@ -139,9 +139,6 @@ export const getTeamMembersByWorkspace = async (workspaceId: string): Promise<Te
   }
 };
 
-
-
-
 export const addMemberToTeam = async (teamId: string, memberData: AddMemberData): Promise<TeamMember> => {
   try {
     const response = await fetch(`${API_BASE_URL}/teams/${teamId}/members`, {
@@ -158,6 +155,25 @@ export const addMemberToTeam = async (teamId: string, memberData: AddMemberData)
     return data.members;
   } catch (error) {
     console.error('Error adding team member:', error);
+    throw error;
+  }
+};
+
+export const removeTeamMember = async (teamId: string, memberId: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/teams/${teamId}/members/${memberId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to remove team member');
+    }
+  } catch (error) {
+    console.error('Error removing team member:', error);
     throw error;
   }
 };

@@ -4,38 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { MoreHorizontal } from "lucide-react";
 import AddMember from './addMember/addMember';
-import { getTeamMembersByWorkspace, TeamMember as TeamMemberType } from '@/api';
+import { getTeamMembersByWorkspace, TeamMember as TeamMemberType, removeTeamMember } from '@/api';
 import { useWorkspace } from '@/context/useWorkspace';
 
 interface TeamMemberProps {
   member: TeamMemberType;
   onRoleChange: (memberId: string, newRole: string) => void;
+  onRemove: (memberId: string) => void;
 }
 
-export interface WorkspaceStateDTO {
-  _id: string;
-  name: string;
-  owner_email: string;
-  teams: string[];
-  onboardings: string[];
-  policies: string[];
-  compliances: string[];
-  meetings: string[];
-  emails: string[];
-  apiKeys: string[];
-  employeeFeedbacks: string[];
-  companyFeedbacks: string[];
-  __v: number;
-}
-
-
-const TeamMember: React.FC<TeamMemberProps> = ({ member, onRoleChange }) => {
+const TeamMember: React.FC<TeamMemberProps> = ({ member, onRoleChange, onRemove }) => {
   const { _id, name, email, role, occupation, teams } = member;
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const handleRoleChange = (newRole: string) => {
     onRoleChange(_id, newRole);
+  };
+
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    try {
+      onRemove(_id);
+    } catch (error) {
+      console.error('Failed to remove team member:', error);
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
@@ -75,8 +72,27 @@ const TeamMember: React.FC<TeamMemberProps> = ({ member, onRoleChange }) => {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Request Feedback</DropdownMenuItem>
             <DropdownMenuItem>Add Feedback (anonymous)</DropdownMenuItem>
-            <DropdownMenuItem>Remove from organization</DropdownMenuItem>
-            <DropdownMenuItem className='text-red-600'>Leave organization</DropdownMenuItem>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem className="text-red-500" onSelect={(e) => e.preventDefault()}>
+                  Remove from organization
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will remove the member from the organization.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleRemove} disabled={isRemoving}>
+                    {isRemoving ? 'Removing...' : 'Remove'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -128,6 +144,15 @@ const Team: React.FC = () => {
     setTeamMembers(prevMembers => [...prevMembers, newMember]);
   };
 
+  const handleRemoveMember = async (memberId: string) => {
+    try {
+      await removeTeamMember(teamId, memberId);
+      setTeamMembers(prevMembers => prevMembers.filter(member => member._id !== memberId));
+    } catch (error) {
+      console.error('Failed to remove team member:', error);
+      setError('Failed to remove team member. Please try again.');
+    }
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -153,6 +178,7 @@ const Team: React.FC = () => {
               key={member._id}
               member={member}
               onRoleChange={handleRoleChange}
+              onRemove={handleRemoveMember}
             />
           ))}
         </CardContent>
