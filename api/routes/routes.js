@@ -99,8 +99,9 @@ router.get('/workspaces/:workspaceId/compliance-status', complianceController.ge
 // email routes
 // router.post('/emails', emailController.createEmailConfig);
 // router.get('/emails', emailController.getAllEmailConfigs);
-router.get('/emails/:id', emailController.getEmailConfigByWorkspaceId); 
-router.patch('/emails/:workspaceId', emailController.updateEmailConfiguration);
+router.get('/emails/:workspaceId', emailController.getEmailConfigByWorkspaceId); 
+router.put('/emails/:workspaceId', emailController.updateEmailConfiguration);
+router.patch('/emails/:workspaceId', emailController.patchEmailConfiguration);
 
 router.delete('/emails/:id', emailController.deleteEmailConfig);
 router.get('/workspaces/:workspaceId/emails', emailController.getEmailConfigsByWorkspace);

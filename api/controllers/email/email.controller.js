@@ -47,10 +47,10 @@ exports.getAllEmailConfigs = async (req, res) => {
 };
 
 // Get a single email configuration by ID (Approved)
-// @params: id -> workspaceId
+// @params: workspaceId
 exports.getEmailConfigByWorkspaceId = async (req, res) => {
   try {
-    const email = await Email.findOne({ workspace: req.params.id })
+    const email = await Email.findOne({ workspace: req.params.workspaceId })
     if (!email) return res.status(404).json({ message: 'Email configuration not found' });
     res.json(email);
   } catch (error) {
@@ -106,6 +106,43 @@ exports.updateEmailConfiguration = async (req, res) => {
   } catch (error) {
     console.error('Error in updateEmailConfiguration:', error);
     res.status(400).json({ message: 'Error updating email configuration', error: error.message });
+  }
+};
+
+
+exports.patchEmailConfiguration = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const updates = req.body;
+
+    const emailConfig = await Email.findOne({ workspace: workspaceId });
+    if (!emailConfig) {
+      return res.status(404).json({ message: 'Email configuration not found' });
+    }
+
+    // Update SMTP config
+    if (updates.smtp_config) {
+      // Use spread operator for a cleaner update
+      emailConfig.smtp_config = { ...emailConfig.smtp_config, ...updates.smtp_config };
+    }
+
+    // Update templates
+    if (updates.templates) {
+      // Use spread operator for a cleaner update
+      emailConfig.templates = { ...emailConfig.templates, ...updates.templates };
+    }
+
+    // Validate the updated document before saving
+    const validationError = emailConfig.validateSync();
+    if (validationError) {
+      return res.status(400).json({ message: 'Validation error', error: validationError.message });
+    }
+
+    const updatedConfig = await emailConfig.save();
+    res.status(200).json(updatedConfig);
+  } catch (error) {
+    console.error('Error in updateEmailConfiguration:', error);
+    res.status(500).json({ message: 'Error updating email configuration', error: error.message });
   }
 };
 

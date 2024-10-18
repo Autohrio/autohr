@@ -50,7 +50,8 @@ const Email: React.FC = () => {
     } : null);
   };
 
-  const handleSaveConfig = async () => {
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (!currentWorkspace || !emailConfig) return;
     try {
       await updateEmailConfiguration(currentWorkspace._id, {
@@ -62,7 +63,8 @@ const Email: React.FC = () => {
     }
   };
 
-  const handleSaveTemplates = async () => {
+  const handleSaveTemplates = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (!currentWorkspace || !emailConfig) return;
     try {
       await updateEmailConfiguration(currentWorkspace._id, {

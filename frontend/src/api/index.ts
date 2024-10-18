@@ -25,22 +25,7 @@ export interface Workspace {
   companyFeedbacks: string[];
 }
 
-export interface TeamMember {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  occupation?: string;
-  teams: { _id: string; name: string }[];
-}
-
-export interface AddMemberData {
-  name: string;
-  email: string;
-  role: string;
-  occupation?: string;
-}
-
+// Workspace and User APIs.
 export const checkUserEmailAlreadyExists = async (email: string): Promise<UserData | null> => {
   try {
     const response = await fetch(`${API_BASE_URL}/users/email`, {
@@ -118,6 +103,23 @@ export const createWorkspace = async (name: string, owner_email: string | undefi
   }
 };
 
+// Team APIs
+export interface TeamMember {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  occupation?: string;
+  teams: { _id: string; name: string }[];
+}
+
+export interface AddMemberData {
+  name: string;
+  email: string;
+  role: string;
+  occupation?: string;
+}
+
 export const getTeamMembersByWorkspace = async (workspaceId: string): Promise<TeamMember[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/workspace/${workspaceId}/members`, {
@@ -160,6 +162,7 @@ export const addMemberToTeam = async (teamId: string, memberData: AddMemberData)
   }
 };
 
+// Onboarding APIs
 export interface Candidate {
   _id?: string;
   name: string;
@@ -201,6 +204,7 @@ export const getCandidatesByWorkspace = async (workspaceId: string): Promise<Can
   }
 };
 
+// Email Configuration APIs.
 export interface SMTPConfig {
   host: string;
   port: string;
@@ -256,6 +260,7 @@ export const updateEmailConfiguration = async (
   }
 };
 
+// Policies APIs
 export interface Policy {
   _id: string;
   content: string;
@@ -316,7 +321,7 @@ export const updatePolicy = async (policyId: string, content: string): Promise<P
   }
 };
 
-
+// Compliances APIs
 export interface Compliance {
   _id: string;
   content: string;
