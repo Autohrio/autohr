@@ -381,3 +381,66 @@ export const updateCompliance = async (complianceId: string, content: string): P
     throw error;
   }
 };
+
+// APIKeys APIs
+
+export interface ApiKey {
+  _id: string;
+  name: string;
+  api_key: string;
+  created_at: string;
+}
+
+// Function to create a new API key
+export const createApiKey = async (workspaceId: string, name: string): Promise<ApiKey> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api-keys`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ workspaceId, name }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating API key:', error);
+    throw error;
+  }
+};
+
+// Function to delete an API key
+export const deleteApiKey = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api-keys/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error('Error deleting API key:', error);
+    throw error;
+  }
+};
+
+// Function to get API keys for a specific workspace
+export const getApiKeysByWorkspace = async (workspaceId: string): Promise<ApiKey[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/api-keys`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching API keys for workspace:', error);
+    throw error;
+  }
+};

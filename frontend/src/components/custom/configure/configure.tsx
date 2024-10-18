@@ -1,43 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2 } from "lucide-react";
-
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  createdAt: Date;
-}
+import { Plus, Trash2, Copy, Check } from "lucide-react";
+import { createApiKey, deleteApiKey, getApiKeysByWorkspace, ApiKey } from '@/api';
+import { useWorkspace } from '@/context/useWorkspace';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Configure: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [newKeyName, setNewKeyName] = useState("");
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+  const { currentWorkspace } = useWorkspace();
 
-  const generateApiKey = () => {
-    // This is a simple example. In a real application, you'd want to generate this on the server side.
-    return 'ak_' + Math.random().toString(36).substr(2, 9);
+  useEffect(() => {
+    if (currentWorkspace) {
+      fetchApiKeys();
+    }
+  }, [currentWorkspace]);
+
+  const fetchApiKeys = async () => {
+    try {
+      if (currentWorkspace) {
+        const keys = await getApiKeysByWorkspace(currentWorkspace._id);
+        setApiKeys(keys);
+      }
+    } catch (error) {
+      console.error('Error fetching API keys:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
   };
 
-  const handleCreateApiKey = () => {
+  const handleCreateApiKey = async () => {
     if (newKeyName.trim() === "") return;
 
-    const newKey: ApiKey = {
-      id: Date.now().toString(),
-      name: newKeyName,
-      key: generateApiKey(),
-      createdAt: new Date(),
-    };
-
-    setApiKeys([...apiKeys, newKey]);
-    setNewKeyName("");
+    try {
+      if (currentWorkspace) {
+        const newKey = await createApiKey(currentWorkspace._id, newKeyName);
+        setApiKeys([...apiKeys, newKey]);
+        setNewKeyName("");
+      }
+    } catch (error) {
+      console.error('Error creating API key:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
   };
 
-  const handleDeleteApiKey = (id: string) => {
-    setApiKeys(apiKeys.filter(key => key.id !== id));
+  const handleDeleteApiKey = async (id: string) => {
+    try {
+      await deleteApiKey(id);
+      setApiKeys(apiKeys.filter(key => key._id !== id));
+    } catch (error) {
+      console.error('Error deleting API key:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
+
+  const handleCopyApiKey = (apiKey: string, id: string) => {
+    navigator.clipboard.writeText(apiKey).then(() => {
+      setCopiedKeyId(id);
+      setTimeout(() => setCopiedKeyId(null), 2000); // Reset after 2 seconds
+    });
   };
 
   return (
@@ -80,10 +105,34 @@ const Configure: React.FC = () => {
         </TableHeader>
         <TableBody>
           {apiKeys.map((apiKey) => (
-            <TableRow key={apiKey.id}>
-              <TableCell>{apiKey.name}</TableCell>
-              <TableCell>{apiKey.key}</TableCell>
-              <TableCell>{apiKey.createdAt.toLocaleString()}</TableCell>
+            <TableRow key={apiKey._id}>
+                <TableCell>{apiKey.name}</TableCell>
+              <TableCell className="flex items-center space-x-2">
+                <span>{apiKey?.api_key}</span>
+                {apiKey.api_key && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleCopyApiKey(apiKey.api_key, apiKey._id)}
+                        >
+                          {copiedKeyId === apiKey._id ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{copiedKeyId === apiKey._id ? 'Copied!' : 'Copy API Key'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </TableCell>
+              <TableCell>{new Date(apiKey.created_at).toLocaleString()}</TableCell>
               <TableCell>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -100,7 +149,7 @@ const Configure: React.FC = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleDeleteApiKey(apiKey.id)}>
+                      <AlertDialogAction onClick={() => handleDeleteApiKey(apiKey._id)}>
                         Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>

@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 // Generate a new API key
 function generateApiKey() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(16).toString('hex');
 }
 
 // Create a new API key
@@ -12,7 +12,7 @@ exports.createApiKey = async (req, res) => {
     const { workspaceId, name } = req.body;
     const apiKey = new APIKey({
       name,
-      api_key: generateApiKey(),
+      api_key: `ah_${generateApiKey()}`,
       created_at: new Date()
     });
     await apiKey.save();
