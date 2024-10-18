@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,21 +6,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Share2, Download, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, Link, Type } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useWorkspace } from '@/context/useWorkspace';
+import { createPolicy, getPolicy, updatePolicy, Policy } from '@/api';
+import { debounce } from 'lodash';
 
 interface CustomRenderers {
   [key: string]: React.FC<{ children: React.ReactNode }>;
 }
 
-const fontFamilies = [
-  { name: 'Sans-serif', value: 'sans-serif' },
-  { name: 'Serif', value: 'serif' },
-  { name: 'Monospace', value: 'monospace' },
-  { name: 'Cursive', value: 'cursive' },
-  { name: 'Fantasy', value: 'fantasy' },
-];
-
-const Policies: React.FC = () => {
-  const [content, setContent] = useState<string>(`# Company Policies
+const policyPlaceHolder: string = `
+# Company Policies
 
 ## Code of Conduct
 
@@ -40,11 +35,71 @@ We take data protection seriously...
 | Code of Conduct | Guidelines for behavior | High |
 | Compliance | Legal and regulatory adherence | Critical |
 | Data Protection | Safeguarding sensitive information | Very High |
-`);
+`
+
+const fontFamilies = [
+  { name: 'Sans-serif', value: 'sans-serif' },
+  { name: 'Serif', value: 'serif' },
+  { name: 'Monospace', value: 'monospace' },
+  { name: 'Cursive', value: 'cursive' },
+  { name: 'Fantasy', value: 'fantasy' },
+];
+
+const Policies: React.FC = () => {
+  const [content, setContent] = useState<string>('');
+  const [policy, setPolicy] = useState<Policy | null>(null);
   const [previewFont, setPreviewFont] = useState<string>('sans-serif');
+  const { currentWorkspace } = useWorkspace();
+
+  const debouncedUpdatePolicy = useCallback(
+    debounce(async (policyId: string, newContent: string) => {
+      try {
+        const updatedPolicy = await updatePolicy(policyId, newContent);
+        setPolicy(updatedPolicy);
+        console.log("Policy updated successfully");
+      } catch (error) {
+        console.error("Failed to update policy:", error);
+      }
+    }, 5000),
+    []
+  );
+
+  useEffect(() => {
+    const fetchPolicyContent = async () => {
+      if (currentWorkspace) {
+        try {
+          const fetchedPolicy = await getPolicy(currentWorkspace._id);
+          if (fetchedPolicy) {
+            setPolicy(fetchedPolicy);
+            setContent(fetchedPolicy.content);
+          } else {
+            console.log('No policy found');
+            // Don't create a new policy here, wait for user input
+            const newPolicy = await createPolicy(currentWorkspace._id, content)
+            setContent(newPolicy.content);
+          }
+        } catch (error) {
+          console.error("Failed to fetch policy:", error);
+        }
+      }
+    };
+
+    fetchPolicyContent();
+  }, [currentWorkspace]);
+
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdatePolicy.cancel();
+    };
+  }, [debouncedUpdatePolicy]);
 
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+    const newContent = e.target.value;
+    setContent(newContent);
+    if (policy) {
+      debouncedUpdatePolicy(policy._id, newContent);
+    }
   };
 
   const handleDownload = () => {
@@ -66,17 +121,17 @@ We take data protection seriously...
   };
 
   const customRenderers: CustomRenderers = {
-    h1: ({children}) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
-    h2: ({children}) => <h2 className="text-2xl font-semibold mb-3">{children}</h2>,
-    h3: ({children}) => <h3 className="text-xl font-medium mb-2">{children}</h3>,
-    p: ({children}) => <p className="mb-4">{children}</p>,
-    ul: ({children}) => <ul className="list-disc pl-5 mb-4">{children}</ul>,
-    ol: ({children}) => <ol className="list-decimal pl-5 mb-4">{children}</ol>,
-    li: ({children}) => <li className="mb-1">{children}</li>,
-    table: ({children}) => <table className="w-full border-collapse border border-gray-300 mb-4">{children}</table>,
-    thead: ({children}) => <thead className="bg-gray-100">{children}</thead>,
-    th: ({children}) => <th className="border border-gray-300 p-2">{children}</th>,
-    td: ({children}) => <td className="border border-gray-300 p-2">{children}</td>,
+    h1: ({ children }) => <h1 className="text-3xl font-bold mb-4">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-2xl font-semibold mb-3">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-medium mb-2">{children}</h3>,
+    p: ({ children }) => <p className="mb-4">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc pl-5 mb-4">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal pl-5 mb-4">{children}</ol>,
+    li: ({ children }) => <li className="mb-1">{children}</li>,
+    table: ({ children }) => <table className="w-full border-collapse border border-gray-300 mb-4">{children}</table>,
+    thead: ({ children }) => <thead className="bg-gray-100">{children}</thead>,
+    th: ({ children }) => <th className="border border-gray-300 p-2">{children}</th>,
+    td: ({ children }) => <td className="border border-gray-300 p-2">{children}</td>,
   };
 
   return (
@@ -126,15 +181,16 @@ We take data protection seriously...
             <textarea
               className="w-full h-[calc(100vh-200px)] p-4 font-mono text-sm bg-gray-100 resize-none focus:outline-none"
               value={content}
+              placeholder={policyPlaceHolder}
               onChange={handleContentChange}
             />
           </TabsContent>
           <TabsContent value="preview">
-            <div 
+            <div
               className="w-full h-[calc(100vh-200px)] px-16 py-4 overflow-auto prose max-w-none"
               style={{ fontFamily: previewFont }}
             >
-              <ReactMarkdown 
+              <ReactMarkdown
                 components={customRenderers}
                 remarkPlugins={[remarkGfm]}
               >

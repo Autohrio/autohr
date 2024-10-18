@@ -255,3 +255,63 @@ export const updateEmailConfiguration = async (
     throw error;
   }
 };
+
+export interface Policy {
+  _id: string;
+  content: string;
+}
+
+export const getPolicy = async (workspaceId: string): Promise<Policy | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/policies`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error('Failed to fetch policy');
+    }
+    const policies = await response.json();
+    return policies.length > 0 ? policies[0] : null;
+  } catch (error) {
+    console.error('Error fetching policy:', error);
+    throw error;
+  }
+};
+
+export const createPolicy = async (workspaceId: string, content: string): Promise<Policy> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/policies`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ workspaceId, content }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create policy');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating policy:', error);
+    throw error;
+  }
+};
+
+export const updatePolicy = async (policyId: string, content: string): Promise<Policy> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/policies/${policyId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update policy');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating policy:', error);
+    throw error;
+  }
+};

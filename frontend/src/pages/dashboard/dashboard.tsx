@@ -13,7 +13,6 @@ export default function DashboardLayout() {
     if (user) {
       try {
         const userWorkspaces = await getAllWorkspaces(user.email);
-        console.log(userWorkspaces)
         setWorkspaces(userWorkspaces);
         if (userWorkspaces.length > 0 && !currentWorkspace) {
           setCurrentWorkspace(userWorkspaces[0]);
