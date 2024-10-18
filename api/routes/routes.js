@@ -64,11 +64,12 @@ router.get('/workspace/:workspaceId/members', teamController.getTeamMembersByWor
 // Candidate routes
 router.post('/candidates', onboardingController.createCandidate);
 router.get('/workspace/:workspaceId/candidates', onboardingController.getCandidatesByWorkspace);
+router.patch('/workspace/:workspaceId/candidates/:candidateId', onboardingController.patchCandidateFromWorkspace);
+router.delete('/workspace/:workspaceId/candidates/:candidateId', onboardingController.removeCandidateFromWorkspace);
 
 // router.get('/candidates/:id', onboardingController.getCandidatesByWorkspace);
 // router.get('/candidates/:id', onboardingController.getCandidateById);
 // router.put('/candidates/:id', onboardingController.updateCandidate);
-// router.delete('/candidates/:id', onboardingController.deleteCandidate);
 // router.put('/candidates/:id/interview-status', onboardingController.updateCandidateInterviewStatus);
 // router.get('/onboardings/:onboardingId/candidates', onboardingController.getCandidatesByOnboarding);
 

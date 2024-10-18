@@ -204,6 +204,48 @@ export const getCandidatesByWorkspace = async (workspaceId: string): Promise<Can
   }
 };
 
+export const removeCandidate = async (workspaceId: string, candidateId: string): Promise<void> => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/workspace/${workspaceId}/candidates/${candidateId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to remove candidate');
+    }
+  }catch(error){
+    console.error('Error deleting candidates:', error);
+    throw error;
+  }
+};
+
+export const patchCandidate = async (workspaceId: string, candidateId: string, updateData: Partial<Candidate>): Promise<Candidate> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspace/${workspaceId}/candidates/${candidateId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update candidate');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating candidate:', error);
+    throw error;
+  }
+};
+
 // Email Configuration APIs.
 export interface SMTPConfig {
   host: string;

@@ -17,11 +17,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!user) {
+  if (!session && !user) {
     return <Navigate to="/register" state={{ from: location }} replace />;
   }
 
-  if (!currentWorkspace) {
+  if (!session && !user && !currentWorkspace) {
     return <Navigate to="/create-workspace" state={{ from: location }} replace />;
   }
 
