@@ -315,3 +315,64 @@ export const updatePolicy = async (policyId: string, content: string): Promise<P
     throw error;
   }
 };
+
+
+export interface Compliance {
+  _id: string;
+  content: string;
+}
+
+export const getCompliance = async (workspaceId: string): Promise<Compliance | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/workspaces/${workspaceId}/compliances`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // No compliance found
+      }
+      throw new Error('Failed to fetch compliance');
+    }
+    const compliances = await response.json();
+    return compliances.length > 0 ? compliances[0] : null;
+  } catch (error) {
+    console.error('Error fetching compliance:', error);
+    throw error;
+  }
+};
+
+export const createCompliance = async (workspaceId: string, content: string): Promise<Compliance> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/compliances`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ workspaceId, content }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create compliance');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating compliance:', error);
+    throw error;
+  }
+};
+
+export const updateCompliance = async (complianceId: string, content: string): Promise<Compliance> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/compliances/${complianceId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update compliance');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating compliance:', error);
+    throw error;
+  }
+};

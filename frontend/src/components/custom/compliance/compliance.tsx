@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,21 +6,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Share2, Download, ChevronLeft, ChevronRight, Bold, Italic, Underline, List, Link, Type } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useWorkspace } from '@/context/useWorkspace';
+import { createCompliance, getCompliance, updateCompliance, Compliance as ComplianceType } from '@/api';
+import { debounce } from 'lodash';
 
 interface CustomRenderers {
   [key: string]: React.FC<{ children: React.ReactNode }>;
 }
 
-const fontFamilies = [
-  { name: 'Sans-serif', value: 'sans-serif' },
-  { name: 'Serif', value: 'serif' },
-  { name: 'Monospace', value: 'monospace' },
-  { name: 'Cursive', value: 'cursive' },
-  { name: 'Fantasy', value: 'fantasy' },
-];
-
-const Compliance: React.FC = () => {
-  const [content, setContent] = useState<string>(`# Company Compliance
+const compliancePlaceholder: string = `
+# Company Compliance
 
 ## Code of Conduct
 
@@ -40,11 +35,70 @@ We take data protection seriously...
 | Code of Conduct | Guidelines for behavior | High |
 | Compliance | Legal and regulatory adherence | Critical |
 | Data Protection | Safeguarding sensitive information | Very High |
-`);
+`
+
+const fontFamilies = [
+  { name: 'Sans-serif', value: 'sans-serif' },
+  { name: 'Serif', value: 'serif' },
+  { name: 'Monospace', value: 'monospace' },
+  { name: 'Cursive', value: 'cursive' },
+  { name: 'Fantasy', value: 'fantasy' },
+];
+
+const Compliance: React.FC = () => {
+  const [content, setContent] = useState<string>('');
+  const [compliance, setCompliance] = useState<ComplianceType | null>(null);
   const [previewFont, setPreviewFont] = useState<string>('sans-serif');
+  const { currentWorkspace } = useWorkspace();
+
+  const debouncedUpdateCompliance = useCallback(
+    debounce(async (complianceId: string, newContent: string) => {
+      try {
+        const updatedCompliance = await updateCompliance(complianceId, newContent);
+        setCompliance(updatedCompliance);
+        console.log("Compliance updated successfully");
+      } catch (error) {
+        console.error("Failed to update compliance:", error);
+      }
+    }, 3000),
+    []
+  );
+
+  useEffect(() => {
+    const fetchComplianceContent = async () => {
+      if (currentWorkspace) {
+        try {
+          const fetchedCompliance = await getCompliance(currentWorkspace._id);
+          if (fetchedCompliance) {
+            setCompliance(fetchedCompliance);
+            setContent(fetchedCompliance.content);
+          } else {
+            console.log('No compliance found');
+            const newCompliance = await createCompliance(currentWorkspace._id, compliancePlaceholder);
+            setCompliance(newCompliance);
+            setContent(newCompliance.content);
+          }
+        } catch (error) {
+          console.error("Failed to fetch compliance:", error);
+        }
+      }
+    };
+
+    fetchComplianceContent();
+  }, [currentWorkspace]);
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdateCompliance.cancel();
+    };
+  }, [debouncedUpdateCompliance]);
 
   const handleContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setContent(e.target.value);
+    const newContent = e.target.value;
+    setContent(newContent);
+    if (compliance) {
+      debouncedUpdateCompliance(compliance._id, newContent);
+    }
   };
 
   const handleDownload = () => {
@@ -52,7 +106,7 @@ We take data protection seriously...
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'complaince.md';
+    a.download = 'compliance.md';
     a.click();
   };
 
@@ -126,6 +180,7 @@ We take data protection seriously...
             <textarea
               className="w-full h-[calc(100vh-200px)] p-4 font-mono text-sm bg-gray-100 resize-none focus:outline-none"
               value={content}
+              placeholder={compliancePlaceholder}
               onChange={handleContentChange}
             />
           </TabsContent>
