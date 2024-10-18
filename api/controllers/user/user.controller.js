@@ -56,6 +56,22 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+// Patch a user
+exports.patchUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findByIdAndUpdate(
+      { _id: id },
+      { $set: req.body },
+      { new: true, runValidators: true });
+      
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // Delete a user
 exports.deleteUser = async (req, res) => {
   try {
@@ -83,10 +99,10 @@ exports.addWorkspaceToUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     user.workspaces.push(req.body.workspaceId);
     await user.save();
-    
+
     res.json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -98,10 +114,10 @@ exports.removeWorkspaceFromUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     user.workspaces = user.workspaces.filter(w => w.toString() !== req.params.workspaceId);
     await user.save();
-    
+
     res.json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -113,10 +129,10 @@ exports.updateUserSettings = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     user.settings = req.body.settingsId;
     await user.save();
-    
+
     res.json(user);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -129,7 +145,7 @@ exports.getUserSettings = async (req, res) => {
     const user = await User.findById(req.params.id).populate('settings');
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!user.settings) return res.status(404).json({ message: 'User settings not found' });
-    
+
     res.json(user.settings);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -21,6 +21,7 @@ router.get('/users', userController.getUsers);
 router.get('/users/:id', userController.getUserById);
 router.post('/users/email', userController.getUserByEmail);
 router.put('/users/:id', userController.updateUser);
+router.patch('/users/:id', userController.patchUser);
 router.delete('/users/:id', userController.deleteUser);
 router.get('/users/:id/workspaces', userController.getUserWorkspaces);
 router.post('/users/:id/workspaces', userController.addWorkspaceToUser);
