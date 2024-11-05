@@ -1,15 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { ChevronDown, User, Mail, Home, Users, UserRoundCheck, Globe, MessageCircle, Calendar, Settings, Cog, PlusCircle } from "lucide-react";
 import { useWorkspace } from '@/context/useWorkspace';
-import { getAllWorkspaces } from '@/api';
+import { getAllWorkspaces, createWorkspace } from '@/api';
 import { useUser } from '@/context/useUser';
 
 const Sidebar = () => {
   const { setWorkspaces, setCurrentWorkspace, currentWorkspace, workspaces } = useWorkspace();
   const { user } = useUser();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const getWorkspaces = async () => {
     if (user) {
@@ -25,10 +30,33 @@ const Sidebar = () => {
     }
   }
 
+  const handleCreateWorkspace = async () => {
+    if (!newWorkspaceName.trim() || !user) return;
+    
+    setIsCreating(true);
+    try {
+      const newWorkspace = await createWorkspace(
+        newWorkspaceName,
+        user.email
+      );
+      
+      // Update workspaces list and set current workspace
+      await getWorkspaces();
+      setCurrentWorkspace(newWorkspace);
+      
+      // Reset and close dialog
+      setNewWorkspaceName('');
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
   useEffect(() => {
     getWorkspaces()
   }, [])
-
 
   return (
     <div className="space-y-4">
@@ -50,13 +78,43 @@ const Sidebar = () => {
                 {workspace.name}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Create New Workspace
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Workspace</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                placeholder="Workspace name"
+                value={newWorkspaceName}
+                onChange={(e) => setNewWorkspaceName(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => setIsDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateWorkspace}
+                disabled={!newWorkspaceName.trim() || isCreating}
+              >
+                {isCreating ? 'Creating...' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
+
       <div>
         <h2 className="text-xs font-semibold text-gray-500 mb-2">MAIN</h2>
         <nav className="space-y-1">
@@ -86,6 +144,7 @@ const Sidebar = () => {
           </Link>
         </nav>
       </div>
+
       <div>
         <h2 className="text-xs font-semibold text-gray-500 mb-2">AUTOMATIONS</h2>
         <nav className="space-y-1">
@@ -99,6 +158,7 @@ const Sidebar = () => {
           </Link>
         </nav>
       </div>
+
       <div>
         <h2 className="text-xs font-semibold text-gray-500 mb-2">SETTINGS</h2>
         <nav className="space-y-1">
