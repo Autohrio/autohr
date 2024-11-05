@@ -165,7 +165,7 @@ exports.getAnonymizedCompanyFeedback = async (req, res) => {
     if (!workspace) return res.status(404).json({ message: 'Workspace not found' });
 
     const anonymizedFeedbacks = workspace.companyFeedbacks.map(feedback => ({
-      id: feedback._id,
+      _id: feedback._id,
       feedback: feedback.feedback,
       created_at: feedback.created_at
     }));
