@@ -14,6 +14,7 @@ const {
   settingsController,
   employeeFeedbackController,
   companyFeedbackController,
+  chatController,
  } = require('../controllers')
 
 router.post('/users', userController.createUser);
@@ -172,5 +173,8 @@ router.get('/employees/:employeeId/company-feedback', companyFeedbackController.
 router.get('/workspaces/:workspaceId/company-feedback-summary', companyFeedbackController.getCompanyFeedbackSummary);
 router.get('/workspaces/:workspaceId/anonymized-company-feedback', companyFeedbackController.getAnonymizedCompanyFeedback);
 
+
+router.post('/chat/stream', chatController.sendHrMessageStream);
+router.post('/chat/', chatController.sendHrMessage);
 
 module.exports = router;

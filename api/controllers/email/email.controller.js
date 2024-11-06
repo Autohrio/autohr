@@ -185,6 +185,7 @@ exports.getEmailConfigsByWorkspace = async (req, res) => {
 // Send a test email
 exports.sendTestEmail = async (req, res) => {
   try {
+    // TODO add Development Mode, where it will send to Mailhog configuration
     const { emailId, to, subject, body } = req.body;
     const email = await Email.findById(emailId).populate('smtp_config');
     if (!email) return res.status(404).json({ message: 'Email configuration not found' });

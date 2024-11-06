@@ -39,15 +39,162 @@ const teamSchema = new Schema({
 
 // Team Member Schema
 const teamMemberSchema = new Schema({
-  name: { type: String, required: true },
-  role: { type: String, enum: ['owner', 'member', 'guest'], required: true },
-  occupation: String,
-  email: { type: String, required: true },
-  workspace: { type: Schema.Types.ObjectId, ref: 'Workspace', required: true },
-  teams: [{ type: Schema.Types.ObjectId, ref: 'Team' }]
+  // Basic Information
+  name: { 
+    type: String, 
+    required: true 
+  },
+  email: { 
+    type: String, 
+    required: true 
+  },
+  employee_id: {
+    type: String,
+    // required: true,
+    // unique: true
+  },
+  
+  // Position and Organization
+  position: {
+    type: String,
+    required: true
+  },
+  organizational_unit: {
+    type: String,
+    required: true
+  },
+  rank: {
+    type: String,
+    enum: ['Manager', 'Supervisor', 'Rank and File'],
+  },
+  role: { 
+    type: String, 
+    enum: ['owner', 'member', 'guest', 'manager', 'supervisor'], 
+  },
+
+  // Dates
+  hire_date: {
+    type: Date,
+  },
+  regularization_date: {
+    type: Date
+  },
+
+  // Leave Information
+  leave_balance: {
+    vacation_leave: {
+      type: Number,
+      default: 0
+    },
+    sick_leave: {
+      type: Number,
+      default: 0
+    }
+  },
+
+  // Compensation
+  compensation: {
+    basic_pay: {
+      amount: {
+        type: Number,
+        default: 0
+      },
+      currency: {
+        type: String,
+        default: 'PHP'
+      }
+    }
+  },
+
+  // Status and Relationships
+  employment_status: {
+    type: String,
+    enum: ['Permanent', 'Probation', 'Contract', 'Resigned', 'Terminated']
+  },
+  supervisor: {
+    type: Schema.Types.ObjectId,
+    ref: 'TeamMember'
+  },
+  reporting_line: [{
+    type: Schema.Types.ObjectId,
+    ref: 'TeamMember'
+  }],
+  
+  // Workspace and Team Relationships
+  workspace: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Workspace', 
+    required: true 
+  },
+  teams: [{ 
+    type: Schema.Types.ObjectId, 
+    ref: 'Team' 
+  }]
+}, {
+  timestamps: true
 });
 
-teamMemberSchema.index({ email: 1, workspace: 1 }, { unique: true });
+// Indexes
+teamMemberSchema.index({ workspace: 1, employee_id: 1 }, { unique: true });
+teamMemberSchema.index({ workspace: 1, email: 1 }, { unique: true });
+teamMemberSchema.index({ workspace: 1, organizational_unit: 1 });
+teamMemberSchema.index({ workspace: 1, employment_status: 1 });
+
+// Methods
+teamMemberSchema.methods = {
+  // Get leave balance
+  getLeaveBalance() {
+    return this.leave_balance;
+  },
+
+  // Update leave balance
+  async updateLeaveBalance(leaveType, amount) {
+    if (leaveType === 'vacation') {
+      this.leave_balance.vacation_leave += amount;
+    } else if (leaveType === 'sick') {
+      this.leave_balance.sick_leave += amount;
+    }
+    await this.save();
+  },
+
+  // Get reporting line
+  async getReportingLine() {
+    return await this.populate('reporting_line').execPopulate();
+  }
+};
+
+// Statics
+teamMemberSchema.statics = {
+  // Find members by workspace
+  findByWorkspace(workspaceId) {
+    return this.find({ workspace: workspaceId })
+      .populate('supervisor')
+      .populate('teams');
+  },
+
+  // Get reporting structure
+  async getReportingStructure(workspaceId) {
+    return this.find({ workspace: workspaceId })
+      .populate({
+        path: 'supervisor',
+        select: 'name position'
+      })
+      .select('name position supervisor organizational_unit');
+  },
+
+  // Find by employee ID
+  async findByEmployeeId(employeeId, workspaceId) {
+    return this.findOne({
+      employee_id: employeeId,
+      workspace: workspaceId
+    }).populate('supervisor');
+  }
+};
+
+// Virtuals
+teamMemberSchema.virtual('fullName').get(function() {
+  return this.name;
+});
 
 // Onboarding Schema
 const onboardingSchema = new Schema({

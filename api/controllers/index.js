@@ -11,4 +11,6 @@ module.exports = {
   settingsController: require('./settings/settings.controller'),
   employeeFeedbackController: require('./feedback/feedback.controller'),
   companyFeedbackController: require('./feedback/companyFeedback.controller'),
+  // Chat Service
+  chatController: require('./chat/chat.controller'),
 }
