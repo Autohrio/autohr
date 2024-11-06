@@ -1,0 +1,39 @@
+# services:
+#   mailhog:
+#     image: mailhog/mailhog:latest
+#     container_name: mailhog
+#     ports:
+#       - "1025:1025"
+#       - "8025:8025"
+#     environment:
+#       # Web UI Basic Auth
+#       MH_UI_WEB_AUTH_FILE: ""
+#       MH_AUTH_FILE: ""
+#       MH_UI_BASIC_AUTH_USER: "user"
+#       MH_UI_BASIC_AUTH_PASS: "password"
+#       # SMTP Auth
+#       MH_SMTP_AUTH_ACCEPT_ANY: "true"
+#       MH_SMTP_AUTH_ALLOWED_USERS: "user:password"
+#       # Storage settings
+#       MH_STORAGE: maildir
+#       MH_MAILDIR_PATH: /tmp
+#     volumes:
+#       - mailhog_data:/tmp
+#     restart: unless-stopped
+#     networks:
+#       - mailhog_network
+
+# volumes:
+#   mailhog_data:
+#     driver: local
+
+# networks:
+#   mailhog_network:
+#     driver: bridge
+
+services:
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"  # SMTP server port
+      - "8025:8025"  # Web UI port

@@ -5,6 +5,7 @@ node_modules
 /.pnp
 .pnp.js
 
+.persist
 # testing
 /coverage
 
@@ -24,3 +25,4 @@ yarn-error.log*
 
 .env
 storage
+tmp

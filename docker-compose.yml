@@ -51,3 +51,10 @@ services:
       - "9001:9001"
     volumes:
       - ./storage/minio_data:/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"  
+    volumes:
+      - ./storage/qdrant_data:/qdrant/storage  
