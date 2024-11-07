@@ -2,7 +2,7 @@
 
 const Footer = () => {
   return (
-    <footer className="py-8">
+    <footer className="py-8 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -12,18 +12,16 @@ const Footer = () => {
           <div>
             <h4 className="font-bold mb-2">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="/" className="text-gray-600">Home</a></li>
-              <li><a href="/" className="text-gray-600">About Us</a></li>
+              <li><a href="/about-us" className="text-gray-600">About Us</a></li>
               <li><a href="/" className="text-gray-600">Services</a></li>
-              <li><a href="/" className="text-gray-600">Contact</a></li>
+              <li><a href="/contact" className="text-gray-600">Contact</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-bold mb-2">Resources</h4>
             <ul className="space-y-2">
-              <li><a href="/" className="text-gray-600">Blog</a></li>
               <li><a href="/" className="text-gray-600">FAQs</a></li>
-              <li><a href="/" className="text-gray-600">Support</a></li>
+              <li><a href="/support" className="text-gray-600">Support</a></li>
             </ul>
           </div>
           <div>

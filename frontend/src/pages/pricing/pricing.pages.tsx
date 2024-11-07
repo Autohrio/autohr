@@ -1,127 +1,136 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
+import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
-import Footer from '../home/components/footer';
 
 const PricingPage: React.FC = () => {
   const [isMonthly, setIsMonthly] = useState(true);
   const navigate = useNavigate();
 
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 }
+  };
+
   const plans = [
     {
       name: 'Free',
       price: { monthly: 0, yearly: 0 },
+      description: 'Basic HR management for small teams',
       features: ['Basic HR management', 'Up to 5 employees', 'Email support'],
       cta: 'Get Started',
       ctaAction: () => navigate('/login'),
-      tag: 'Free trial',
-      highlight: false
+      tag: 'Free trial'
     },
     {
       name: 'Pro',
-      price: { monthly: 19, yearly: 190 },
+      price: { monthly: 29, yearly: 190 },
+      description: 'Advanced features for growing businesses',
       features: ['Advanced HR tools', '5-100 employees', 'Priority support', 'Custom branding'],
       cta: 'Choose Pro',
       ctaAction: () => navigate('/login'),
-      tag: 'Most popular',
-      highlight: true
+      tag: 'Most Popular',
+      popular: true
     },
     {
       name: 'Enterprise',
       price: { monthly: 'Custom', yearly: 'Custom' },
+      description: 'Custom solutions for large organizations',
       features: ['Full suite of HR tools', 'Unlimited employees', '24/7 dedicated support', 'Advanced analytics'],
       cta: 'Contact Us',
-      ctaAction: () => window.location.href = 'mailto:sales@autohr.com',
-      tag: '',
-      highlight: false
+      ctaAction: () => window.location.href = 'mailto:sales@autohr.com'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-slate-100 to-orange-200 py-4 px-4 sm:px-6 lg:px-8">
-      <header className="">
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <div className="text-2xl font-bold"
-          onClick={() => navigate("/")}
-          >Auto<span className='text-[#FF8D60]'>Hr.</span></div>
-          <nav className="hidden md:flex space-x-4">
-            <a href="/" className="text-orange-500">Coverage</a>
-            <a href="/" className="text-orange-500">Resources</a>
-            <a href="/" className="text-orange-500">Blog</a>
-            <a href="/" className="text-orange-500">About</a>
-            <a href="/pricing" className="text-orange-500">Pricing</a>
-          </nav>
-          <div className="flex items-center space-x-4">
+    <div className="min-h-screen">
+      {/* Original Hero Section */}
+      <section className="mt-[-6rem] bg-gradient-to-b from-indigo-900 to-blue-600 text-white py-[10rem]">
+        <motion.div 
+          className="container mx-auto px-4 text-center"
+          variants={fadeInUp}
+          initial="initial"
+          animate="animate"
+        >
+          <h1 className="text-5xl font-bold mb-4">Simple, transparent <span className="text-[#FF8D60]">pricing</span></h1>
+          <p className="text-xl mb-8">Choose the plan that's right for your business</p>
+          
+          <motion.div 
+            className="inline-flex rounded-full p-1 bg-white/10 backdrop-blur-lg"
+            whileHover={{ scale: 1.05 }}
+          >
             <button
-              className="bg-orange-400 text-white btn-primary"
-              onClick={() => navigate('/')}
-            >
-              Go back Home
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mt-10 mx-auto">
-        <div className="flex justify-center mb-8">
-          <div className="inline-flex rounded-full p-1 bg-orange-100">
-            <button
-              className={`px-4 py-2 rounded-full ${isMonthly ? 'bg-orange-500 text-white' : 'text-orange-500'}`}
+              className={`px-6 py-3 rounded-full transition-all ${isMonthly ? 'bg-[#FF8D60] text-white' : 'text-white'}`}
               onClick={() => setIsMonthly(true)}
             >
               Monthly
             </button>
             <button
-              className={`px-4 py-2 rounded-full ${!isMonthly ? 'bg-orange-500 text-white' : 'text-orange-500'}`}
+              className={`px-6 py-3 rounded-full transition-all ${!isMonthly ? 'bg-[#FF8D60] text-white' : 'text-white'}`}
               onClick={() => setIsMonthly(false)}
             >
               Yearly
             </button>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* New Cards Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            {plans.map((plan) => (
+              <div
+                key={plan.name}
+                className={`rounded-lg border ${
+                  plan.popular ? 'border-blue-600 relative' : 'border-gray-200'
+                } p-6`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                <div className="mb-6">
+                  <h3 className="text-xl font-medium mb-2">{plan.name}</h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold">
+                      {typeof plan.price[isMonthly ? 'monthly' : 'yearly'] === 'number' && '$'}
+                    </span>
+                    <span className="text-3xl font-bold">
+                      {plan.price[isMonthly ? 'monthly' : 'yearly']}
+                    </span>
+                    {typeof plan.price[isMonthly ? 'monthly' : 'yearly'] === 'number' && (
+                      <span className="text-gray-500">/ month</span>
+                    )}
+                  </div>
+                  <p className="text-gray-600 mt-2">{plan.description}</p>
+                </div>
+                <button
+                  onClick={plan.ctaAction}
+                  className={`w-full py-2 px-4 rounded-lg ${
+                    plan.popular
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-white border border-gray-300 hover:bg-gray-50'
+                  } mb-6`}
+                >
+                  {plan.cta}
+                </button>
+                <ul className="space-y-4">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex gap-3">
+                      <Check className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-600 text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`bg-white rounded-3xl p-8 ${plan.highlight ? 'ring-4 ring-orange-300' : ''}`}
-            >
-              {plan.tag && (
-                <span className="inline-block px-3 py-1 text-xs font-semibold bg-orange-100 text-orange-600 rounded-full mb-4">
-                  {plan.tag}
-                </span>
-              )}
-              <h2 className="text-2xl font-bold mb-4">{plan.name}</h2>
-              <p className="text-4xl font-bold mb-1">
-                ${typeof plan.price[isMonthly ? 'monthly' : 'yearly'] === 'number'
-                  ? plan.price[isMonthly ? 'monthly' : 'yearly']
-                  : plan.price[isMonthly ? 'monthly' : 'yearly']}
-                <span className="text-base font-normal text-gray-500">
-                  /{isMonthly ? 'month' : 'year'}
-                </span>
-              </p>
-              <ul className="mt-6 space-y-4 mb-8">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center">
-                    <Check className="h-5 w-5 text-orange-500 mr-2" />
-                    <span className="text-gray-600">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                className={`w-full ${plan.highlight ? 'bg-orange-500 hover:bg-orange-600' : 'bg-white text-orange-500 border border-orange-500 hover:bg-orange-50'}`}
-                onClick={plan.ctaAction}
-              >
-                {plan.cta}
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className='mt-40'>
-        <Footer />
-      </div>
+      </section>
     </div>
   );
 };
