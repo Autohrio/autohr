@@ -3,6 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   PaperclipIcon, 
   SendIcon, 
@@ -19,6 +26,9 @@ import {
 } from 'lucide-react';
 import ReactMarkdown, { Components } from 'react-markdown';
 import { sendMessageToAgent } from '@/api/chat';
+import { sendHRStreamMessage, AgentType } from '@/api/personalChat';
+import { useUser } from '@/context/useUser';
+import { useWorkspace } from '@/context/useWorkspace';
 
 interface Message {
   id: number;
@@ -45,13 +55,15 @@ interface CodeProps extends React.HTMLProps<HTMLElement> {
   children?: React.ReactNode;
 }
 
-
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<AgentType>('hr');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useUser();
+  const { currentWorkspace } = useWorkspace();
 
   const hrSuggestions: Suggestion[] = [
     { 
@@ -112,7 +124,6 @@ const ChatInterface: React.FC = () => {
         <p className="mb-2" {...props}>{children}</p>
       ),
       code: ({ inline, className, children, ...props }: CodeProps) => {
-        // const match = /language-(\w+)/.exec(className || '');
         return inline ? (
           <code className="bg-gray-100 px-1 rounded" {...props}>
             {children}
@@ -156,19 +167,45 @@ const ChatInterface: React.FC = () => {
       setIsLoading(true);
 
       try {
-        await sendMessageToAgent(
-          text,
-          (botResponse: string) => {
-            const botMessage: Message = {
-              id: Date.now(),
-              text: botResponse,
-              sender: 'bot',
-              timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, botMessage]);
-          },
-          () => setIsLoading(false)
-        );
+        if (selectedAgent === 'hr') {
+          // Use original HR agent
+          await sendMessageToAgent(
+            text,
+            (botResponse: string) => {
+              const botMessage: Message = {
+                id: Date.now(),
+                text: botResponse,
+                sender: 'bot',
+                timestamp: new Date(),
+              };
+              setMessages(prev => [...prev, botMessage]);
+            },
+            () => setIsLoading(false)
+          );
+        } else {
+          // Use new stream message for supervisor
+          const conversationHistory = messages.map(msg => ({
+            role: msg.sender === 'user' ? 'user' : 'assistant',
+            content: msg.text
+          }));
+
+          await sendHRStreamMessage(
+            text,
+            conversationHistory,
+            (botResponse: string) => {
+              const botMessage: Message = {
+                id: Date.now(),
+                text: botResponse,
+                sender: 'bot',
+                timestamp: new Date(),
+              };
+              setMessages(prev => [...prev, botMessage]);
+            },
+            () => setIsLoading(false),
+            currentWorkspace?._id as string,
+            user?._id as string
+          );
+        }
       } catch (error) {
         console.error('Error in sending message:', error);
         setIsLoading(false);
@@ -207,6 +244,21 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex bg-gray-100 rounded-xl flex-col p-6 mx-auto w-full">
+      <div className="mb-4">
+        <Select
+          value={selectedAgent}
+          onValueChange={(value: AgentType) => setSelectedAgent(value)}
+        >
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Agent Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="hr">HR Agent</SelectItem>
+            <SelectItem value="supervisor">Senior Supervisor</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <ScrollArea className="flex-grow p-8 h-[47rem]">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center space-y-8">
@@ -232,7 +284,9 @@ const ChatInterface: React.FC = () => {
               <div key={message.id} className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}>
                 <div className={`flex items-start max-w-[70%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                   <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarFallback className='bg-gray-300'>{message.sender === 'user' ? 'US' : 'AI'}</AvatarFallback>
+                    <AvatarFallback className='bg-gray-300'>
+                      {message.sender === 'user' ? 'US' : selectedAgent === 'hr' ? 'HR' : 'SV'}
+                    </AvatarFallback>
                   </Avatar>
                   <div className={`mx-2 ${message.sender === 'user' ? 'ml-0' : 'mr-0'}`}>
                     <div 
@@ -267,7 +321,9 @@ const ChatInterface: React.FC = () => {
               <div className="flex justify-start mb-4">
                 <div className="flex items-start">
                   <Avatar className="w-8 h-8">
-                    <AvatarFallback className='bg-gray-300'>AI</AvatarFallback>
+                    <AvatarFallback className='bg-gray-300'>
+                      {selectedAgent === 'hr' ? 'HR' : 'SV'}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="mx-2 p-3 rounded-xl bg-white border border-gray-200">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -279,6 +335,7 @@ const ChatInterface: React.FC = () => {
         )}
         <div ref={chatEndRef} />
       </ScrollArea>
+
       <div className="p-4 border-t">
         <div className="flex items-center space-x-2">
           <Button variant="outline" className="p-2" onClick={() => fileInputRef.current?.click()}>

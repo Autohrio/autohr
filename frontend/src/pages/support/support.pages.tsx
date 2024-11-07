@@ -1,6 +1,4 @@
 import React from 'react';
-import Header from '../home/components/header';
-import Footer from '../home/components/footer';
 import { FileText, Book, HelpCircle } from 'lucide-react';
 
 const Support: React.FC = () => {
@@ -42,11 +40,9 @@ const Support: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <Header />
-
       <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-indigo-900 to-blue-600 text-white py-[10rem]">
+        <section className="mt-[-6rem] bg-gradient-to-b from-indigo-900 to-blue-600 text-white py-[10rem]">
           <div className="container mx-auto px-16">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="md:w-1/2">
@@ -109,7 +105,6 @@ const Support: React.FC = () => {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 };

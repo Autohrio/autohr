@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from '@/context/useAuth';
 import { checkUserEmailAlreadyExists } from '@/api';
 import { LOGO } from '@/assets';
+import { useUser } from '@/context/useUser';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ const Login: React.FC = () => {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [message, setMessage] = useState('');
   const { signInWithOtp, verifyOtp } = useAuth();
+  const { loadUser } = useUser();
   const navigate = useNavigate();
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -33,9 +35,16 @@ const Login: React.FC = () => {
     try {
       await verifyOtp(email, otp);
       const userData = await checkUserEmailAlreadyExists(email);
+      
+      // Clear any existing messages
+      setMessage('');
+      
       if (userData) {
+        // Existing user - wait for user context to update before redirect
+        await loadUser(email);
         navigate('/dashboard');
       } else {
+        // New user - redirect to registration
         navigate('/register');
       }
     } catch (error) {

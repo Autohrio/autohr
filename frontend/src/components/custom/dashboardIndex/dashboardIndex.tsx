@@ -33,7 +33,7 @@ const DashboardIndex = () => {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <div className="flex items-center space-x-2">
           <CalendarIcon className="h-5 w-5 text-gray-500" />
-          <span className="text-sm text-gray-500">Jan 20, 2023 - Feb 09, 2023</span>
+          <span className="text-sm text-gray-500">Jan 20, 2024 - Nov 09, 2024</span>
           <button className="px-3 py-1 bg-black text-white rounded-md text-sm">Download</button>
         </div>
       </div>
@@ -84,7 +84,7 @@ const DashboardIndex = () => {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
+            <div className="text-2xl font-bold">573</div>
             <p className="text-xs text-muted-foreground">+201 since last hour</p>
           </CardContent>
         </Card>

@@ -166,9 +166,9 @@ const Sidebar = () => {
             <MessageCircle className="mr-2 h-4 w-4" />
             Feedback
           </Link>
-          <Link to="/dashboard/personalize" className="w-full flex items-center px-2 py-2 text-sm font-medium text-gray-900 rounded-md hover:bg-gray-100">
+          <Link to="/dashboard/workspace-settings" className="w-full flex items-center px-2 py-2 text-sm font-medium text-gray-900 rounded-md hover:bg-gray-100">
             <Settings className="mr-2 h-4 w-4" />
-            Personalize
+            Settings
           </Link>
           <Link to="/dashboard/configure" className="w-full flex items-center px-2 py-2 text-sm font-medium text-gray-900 rounded-md hover:bg-gray-100">
             <Cog className="mr-2 h-4 w-4" />

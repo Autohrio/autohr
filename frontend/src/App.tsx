@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './App.css';
-import { Dashboard, Home, Pricing, Settings, Login, Register, Workspace, About, Contact, Support } from '@/pages';
+import { Dashboard, Home, Pricing, Settings, Login, Register, Workspace, About, Contact, Support, WorkspaceSettings } from '@/pages';
 import { ChatInterface, Compliance, Configure, DashboardIndex, Email, Feedback, Integration, Meetings, Onboarding, Policies, Team } from '@/components';
 import { AuthProvider, useAuth } from '@/context/useAuth';
 import { UserProvider, useUser } from '@/context/useUser';
@@ -15,31 +15,47 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { currentWorkspace } = useWorkspace();
   const location = useLocation();
 
+  // First, check if there's no session
   if (!session) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (!session && !user) {
+  // If there's a session but no user data, they need to register
+  if (session && !user) {
     return <Navigate to="/register" state={{ from: location }} replace />;
   }
 
-  if (!session && !user && !currentWorkspace) {
+  // If there's a session and user but no workspace, they need to create one
+  if (session && user && !currentWorkspace) {
     return <Navigate to="/create-workspace" state={{ from: location }} replace />;
+  }
+
+  // If all conditions are met, render the protected content
+  return <>{children}</>;
+};
+
+const PublicRoute: React.FC<{ children: React.ReactNode; withLayout?: boolean }> = ({ children, withLayout = true }) => {
+  const { session } = useAuth();
+  const { user } = useUser();
+  const location = useLocation();
+
+  // Allow access to register page if there's a session but no user
+  if (location.pathname === '/register' && session && !user) {
+    return withLayout ? <PublicLayout>{children}</PublicLayout> : <>{children}</>;
+  }
+
+  // Redirect authenticated users with complete profiles to dashboard
+  if (session && user) {
+    return <Navigate to="/dashboard" state={{ from: location }} replace />;
+  }
+
+  if (withLayout) {
+    return <PublicLayout>{children}</PublicLayout>;
   }
 
   return <>{children}</>;
 };
 
-const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session } = useAuth();
-  const location = useLocation();
-
-  if (session) {
-    return <Navigate to="/dashboard" state={{ from: location }} replace />;
-  }
-
-  return <PublicLayout>{children}</PublicLayout>;
-};
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
@@ -54,14 +70,14 @@ const AppRoutes: React.FC = () => {
         <Route path="/support" element={<PublicLayout><Support /></PublicLayout>} />
         <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
         
-        {/* Auth routes */}
+        {/* Auth routes - without layout */}
         <Route path="/login" element={
-          <PublicRoute>
+          <PublicRoute withLayout={false}>
             <Login />
           </PublicRoute>
         } />
         <Route path="/register" element={
-          <PublicRoute>
+          <PublicRoute withLayout={false}>
             <Register />
           </PublicRoute>
         } />
@@ -84,6 +100,7 @@ const AppRoutes: React.FC = () => {
           <Route path="emails" element={<Email />} />
           <Route path="feedback" element={<Feedback />} />
           <Route path="integrations" element={<Integration />} />
+          <Route path="workspace-settings" element={<WorkspaceSettings />} />
         </Route>
         <Route path="/settings" element={
           <ProtectedRoute>

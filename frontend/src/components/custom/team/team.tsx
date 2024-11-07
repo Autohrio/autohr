@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, UserPlus2, Users } from "lucide-react";
 import AddMember from './addMember/addMember';
 import { getTeamMembersByWorkspace, TeamMember as TeamMemberType, removeTeamMember } from '@/api';
 import { useWorkspace } from '@/context/useWorkspace';
@@ -100,11 +100,22 @@ const TeamMember: React.FC<TeamMemberProps> = ({ member, onRoleChange, onRemove 
   );
 };
 
+const EmptyState = ({ onAddMember }: { onAddMember: () => void }) => (
+  <div className="text-center py-12">
+    <Users className="mx-auto h-12 w-12 text-gray-400" />
+    <h3 className="mt-4 text-lg font-medium text-gray-900">No team members yet</h3>
+    <p className="mt-2 text-sm text-gray-500">Get started by adding your first team member.</p>
+    <Button onClick={onAddMember} className="mt-6" variant="outline">
+      <UserPlus2 className="mr-2 h-4 w-4" />
+      Add Team Member
+    </Button>
+  </div>
+);
+
 const Team: React.FC = () => {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMemberType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { currentWorkspace } = useWorkspace();
   const [teamId, setTeamId] = useState<string>("");
 
@@ -115,7 +126,8 @@ const Team: React.FC = () => {
         setTeamMembers(members);
         setIsLoading(false);
       } catch (err) {
-        setError(`Failed to fetch team members: ${err}`);
+        console.error('Failed to fetch team members:', err);
+        setTeamMembers([]);
         setIsLoading(false);
       }
     };
@@ -125,7 +137,7 @@ const Team: React.FC = () => {
       setTeamId(currentWorkspace.teams[0])
     } else {
       setIsLoading(false);
-      setError('No workspace selected');
+      setTeamMembers([]);
     }
   }, [currentWorkspace]);
 
@@ -150,16 +162,11 @@ const Team: React.FC = () => {
       setTeamMembers(prevMembers => prevMembers.filter(member => member._id !== memberId));
     } catch (error) {
       console.error('Failed to remove team member:', error);
-      setError('Failed to remove team member. Please try again.');
     }
   };
 
   if (isLoading) {
     return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
   }
 
   return (
@@ -173,14 +180,18 @@ const Team: React.FC = () => {
           <CardTitle>Invite your team members to collaborate.</CardTitle>
         </CardHeader>
         <CardContent>
-          {teamMembers.map((member) => (
-            <TeamMember
-              key={member._id}
-              member={member}
-              onRoleChange={handleRoleChange}
-              onRemove={handleRemoveMember}
-            />
-          ))}
+          {teamMembers.length === 0 ? (
+            <EmptyState onAddMember={() => setIsAddMemberOpen(true)} />
+          ) : (
+            teamMembers.map((member) => (
+              <TeamMember
+                key={member._id}
+                member={member}
+                onRoleChange={handleRoleChange}
+                onRemove={handleRemoveMember}
+              />
+            ))
+          )}
         </CardContent>
       </Card>
       <AddMember

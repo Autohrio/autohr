@@ -49,10 +49,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const verifyOtp = async (email: string, token: string) => {
+    console.log("verify", { email, token, type: 'email' })
     const {
       data: { session },
       error,
     } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+
+    console.log("session", session)
 
     if (session) {
       setSession(session);

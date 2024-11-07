@@ -8,3 +8,4 @@ export { default as Register } from './register/register.pages';
 export { default as About } from './about/about.pages';
 export { default as Contact } from './contact/contact.pages';
 export { default as Support } from './support/support.pages';
+export { default as WorkspaceSettings } from './workspacesettings/workspacesettings.pages';
