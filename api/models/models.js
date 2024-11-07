@@ -40,6 +40,11 @@ const teamSchema = new Schema({
 // Team Member Schema
 const teamMemberSchema = new Schema({
   // Basic Information
+  user: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'User',
+    // Not required initially as it might be added before user creation
+  },
   name: { 
     type: String, 
     required: true 
@@ -49,19 +54,15 @@ const teamMemberSchema = new Schema({
     required: true 
   },
   employee_id: {
-    type: String,
-    // required: true,
-    // unique: true
+    type: String
   },
   
   // Position and Organization
   position: {
-    type: String,
-    required: true
+    type: String
   },
   organizational_unit: {
-    type: String,
-    required: true
+    type: String
   },
   rank: {
     type: String,
@@ -135,18 +136,22 @@ const teamMemberSchema = new Schema({
 });
 
 // Indexes
-teamMemberSchema.index({ workspace: 1, employee_id: 1 }, { unique: true });
+teamMemberSchema.index({ workspace: 1, employee_id: 1 });
 teamMemberSchema.index({ workspace: 1, email: 1 }, { unique: true });
+teamMemberSchema.index({ user: 1, workspace: 1 });
 teamMemberSchema.index({ workspace: 1, organizational_unit: 1 });
 teamMemberSchema.index({ workspace: 1, employment_status: 1 });
-
 // Methods
 teamMemberSchema.methods = {
   // Get leave balance
   getLeaveBalance() {
     return this.leave_balance;
   },
-
+  async linkUser (userId) {
+    this.user = userId;
+    await this.save();
+    return this;
+  },
   // Update leave balance
   async updateLeaveBalance(leaveType, amount) {
     if (leaveType === 'vacation') {
@@ -170,6 +175,26 @@ teamMemberSchema.statics = {
     return this.find({ workspace: workspaceId })
       .populate('supervisor')
       .populate('teams');
+  },
+
+  async findOrLinkByEmail(workspaceId, email, userId) {
+    const teamMember = await this.findOne({
+      workspace: workspaceId,
+      email: email
+    });
+  
+    if (teamMember && !teamMember.user && userId) {
+      teamMember.user = userId;
+      await teamMember.save();
+    }
+  
+    return teamMember;
+  },
+  async findByUserAndWorkspace(userId, workspaceId) {
+    return this.findOne({
+      user: userId,
+      workspace: workspaceId
+    }).populate('supervisor');
   },
 
   // Get reporting structure

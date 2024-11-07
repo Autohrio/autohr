@@ -1,6 +1,6 @@
 // helper/contextHelper.js
 
-const { TeamMember } = require('../models/models');
+const { TeamMember, User } = require('../models/models');
 
 /**
  * Helper function to detect query intent
@@ -62,21 +62,67 @@ function transformMemberData(member, isRequestingUser) {
   };
 }
 
+async function findOrLinkTeamMember(workspaceId, userId, email) {
+  try {
+    // First, try to find TeamMember by userId
+    let teamMember = await TeamMember.findOne({
+      workspace: workspaceId,
+      email: email
+    }).populate('supervisor');
+
+
+    if (!teamMember) {
+      // If not found by userId, try to find by email
+      teamMember = await TeamMember.findOne({
+        workspace: workspaceId,
+        email: email
+      }).populate('supervisor');
+
+      if (teamMember) {
+        // If found by email, update the TeamMember with the userId
+        teamMember.user = userId;
+        await teamMember.save();
+      }
+    }
+
+    return teamMember;
+  } catch (error) {
+    console.error('Error finding/linking team member:', error);
+    throw error;
+  }
+}
+
+
 /**
  * Get relevant context based on query and user
  */
 async function getTeamMemberContext(workspaceId, query, requestingUserId) {
   try {
+
+    const user = await User.findById(requestingUserId);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+
+    const requestingTeamMember = await findOrLinkTeamMember(
+      workspaceId, 
+      requestingUserId,
+      user.email
+    );
+    // No error handling to requestingTeamMember
+
     // Fetch all team members in workspace with populated supervisor
+    // const allTeamMembers = await TeamMember.find({ 
+    //   workspace: workspaceId 
+    // }).populate('supervisor').lean();
     const allTeamMembers = await TeamMember.find({ 
       workspace: workspaceId 
     }).populate('supervisor').lean();
 
-    // Find requesting user
-    const requestingUser = allTeamMembers.find(member => 
-      member._id.toString() === requestingUserId
-    );
 
+    // // Find requesting user
+    const requestingUser = allTeamMembers.find(member => member.email === user.email);
     if (!requestingUser) {
       throw new Error('Requesting user not found in workspace');
     }
@@ -95,17 +141,19 @@ async function getTeamMemberContext(workspaceId, query, requestingUserId) {
     if (queryIntent.isPersonal) {
       return {
         type: 'personal',
-        requesting_user: requestingUser.name,
+        requesting_user: requestingTeamMember.name,
         context: {
-          user: teamContext.find(m => m.employee_id === requestingUser.employee_id),
-          organizational_unit: requestingUser.organizational_unit,
-          // Include filtered team context for reference
+          user: teamContext.find(m => m.employee_id === requestingTeamMember.employee_id),
+          organizational_unit: requestingTeamMember.organizational_unit,
           team_members: teamContext.filter(m => 
-            m.organizational_unit === requestingUser.organizational_unit
-          )
+            m.organizational_unit === requestingTeamMember.organizational_unit
+          ),
+          leave_balance: requestingTeamMember.leave_balance,
+          compensation: requestingTeamMember.compensation,
         }
       };
     }
+
 
     if (queryIntent.isDepartmental) {
       const departmentMembers = teamContext.filter(member => {
@@ -211,6 +259,7 @@ async function updateChatContext(workspaceId, message, requestingUserId) {
 }
 
 module.exports = {
+  findOrLinkTeamMember,
   getTeamMemberContext,
   updateChatContext,
   detectQueryIntent  // Exported for testing

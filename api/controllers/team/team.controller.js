@@ -117,7 +117,7 @@ exports.addMemberToTeam = async (req, res) => {
   try {
     const { teamId } = req.params;
     const { name, email, role, occupation } = req.body;
-
+    
     // Validate teamId
     if (!mongoose.Types.ObjectId.isValid(teamId)) {
       return res.status(400).json({ message: 'Invalid team ID' });
