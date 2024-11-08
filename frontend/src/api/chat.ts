@@ -25,7 +25,7 @@ export const sendMessageToAgent = async (messageText: string, onMessage: (text: 
       ],
       stream_steps: true
     }
-    const AGENT_ID = "agent-6efd26c8-1625-4a4b-8a07-c49019a8bd04"
+    const AGENT_ID = process.env.VITE_CHAT_AGENT_ID || "agent-6efd26c8-1625-4a4b-8a07-c49019a8bd04"
     // const AGENT_ID = "agent-917b465e-956d-4c13-bdae-3e3e5ff31cd1"
 
     const response = await fetch(`${CHAT_API_BASE_URL}/agents/${AGENT_ID}/messages`, {
